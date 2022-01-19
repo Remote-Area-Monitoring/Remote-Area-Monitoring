@@ -24,6 +24,6 @@ out other preventative actions.
 The system continues to report data for as long as the nodes are active. When one node is damaged, nearby nodes may 
 continue to report critical data.
 ## Forests are big. Is covering all that area expensive?
-Remote Area Monitoring is designed with the people in mind. Our system is intended to protect the areas near 
+Remote Area Monitoring was created with people in mind. Our system is intended to protect the areas near 
 civilization. We only need to create a mesh near these areas. Also, our system is designed to be modular. Not all nodes 
 need the full set of sensors we offer, reducing the overall cost of the system.
