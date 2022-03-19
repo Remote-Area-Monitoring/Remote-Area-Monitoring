@@ -1,0 +1,19 @@
+Painless mesh:
+
+  - connected 3 nodes - 2 regular and 1 aggregator
+  - tested node in the middle communication
+      - far node out of range from aggregator
+      - middle node powered on connected to aggregator
+      - far node picked up connection through middle to aggregator
+  - Any network topology change takes time - approx. 3 mins average
+  - each node has a node id that may be used as an address to send direct messages
+  - JSON variable will be useful for sensor data
+  - there is a method to pass arguments to send message using lambda
+      - look though examples on painlessMesh
+  - Needed additional asyncTCP library - manually cloned from github - see ref links
+
+  Reference Links:
+    - Full Tutorial: https://randomnerdtutorials.com/esp-mesh-esp32-esp8266-painlessmesh/
+    - TCP Library: https://github.com/me-no-dev/AsyncTCP
+    - aggregator reference code: https://gitlab.com/painlessMesh/painlessMesh/-/blob/develop/examples/basic/basic.ino
+    - regular node reference code: https://gitlab.com/painlessMesh/painlessMesh/-/blob/develop/examples/echoNode/echoNode.ino
