@@ -18,7 +18,7 @@ void sendMessage()
   message += mesh.getNodeId();
   mesh.sendBroadcast(message);
   // mesh.sendSingle(8043016, message);
-  taskSendMessage.setInterval(TASK_SECOND * 60);
+  taskSendMessage.setInterval(TASK_SECOND * 10);
 }
 
 // Needed for painless library

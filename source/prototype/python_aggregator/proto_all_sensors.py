@@ -15,7 +15,11 @@ def main():
     ts = Timestamps()
     while True:
         line = port.readline()
-        line = line.decode()
+        try:
+            line = line.decode()
+        except Exception as e:
+            print(e)
+            print(line)
         if 'node_id' in line:
             try:
                 data = json.loads(line)

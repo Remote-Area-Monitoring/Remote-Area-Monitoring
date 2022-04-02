@@ -10,8 +10,9 @@
 #define   MESH_PASSWORD   "SeniorDesign1"
 #define   MESH_PORT       5555
 
-#define WIND_SPEED_PIN 0
-#define WIND_DIR_PIN 0
+#define WIND_SPEED_PIN 39
+#define WIND_DIR_PIN 34
+#define SOIL_PIN 36
 
 Adafruit_INA219 ina;
 Adafruit_BME280 bme;
@@ -25,7 +26,7 @@ DynamicJsonDocument data(4096);
 volatile unsigned int pulses = 0;
 const float WIND_SPEED_CONST = 1.0;
 
-const float WIND_DIR_MIN = 1000.0;
+const float WIND_DIR_MIN = 0.0;
 const float WIND_DIR_MAX = 4000.0;
 const float WIND_DIR_DEG_PER_COUNT = 1.0;
 
@@ -33,6 +34,7 @@ void getNodeIdData();
 void getPowerData();
 void getAtmosphericData();
 void getAirQualityData();
+void getSoilMoisture();
 void getWindSpeed();
 void getWindDirection();
 void getCompassData();
@@ -56,9 +58,11 @@ void setup()
   compass.init();
 
   pinMode(WIND_SPEED_PIN, INPUT);
-  attachInterrupt(0, countPulses, RISING);
+  attachInterrupt(WIND_SPEED_PIN, countPulses, RISING);
 
   pinMode(WIND_DIR_PIN, INPUT);
+
+  pinMode(SOIL_PIN, INPUT);
 
   mesh.setDebugMsgTypes( ERROR | STARTUP | CONNECTION );  // set before init() so that you can see startup messages
   mesh.init( MESH_PREFIX, MESH_PASSWORD, MESH_PORT );
@@ -78,6 +82,7 @@ String allSensorDataString()
   getPowerData();
   getAtmosphericData();
   getAirQualityData();
+  getSoilMoisture();
   getWindSpeed();
   getWindDirection();
   getCompassData();
@@ -114,6 +119,11 @@ void getAirQualityData()
   data["tvoc_ppb"] = ccs.getTVOC();
 }
 
+void getSoilMoisture()
+{
+  data["soil_moisture_adc"] = analogRead(SOIL_PIN);
+}
+
 void countPulses()
 {
   pulses++;
@@ -142,10 +152,10 @@ void getWindDirection()
   
   averageCounts /= numPolls;
   averageCounts = averageCounts - WIND_DIR_MIN;
-  if (averageCounts < 0)
-  {
-    averageCounts = 0;
-  }
+  // if (averageCounts < 0)
+  // {
+  //   averageCounts = 0;
+  // }
 
   float windDirection = averageCounts / WIND_DIR_DEG_PER_COUNT;
   data["wind_direction"] = windDirection;
@@ -157,6 +167,6 @@ void getCompassData()
   compass.read();
   data["azimuth"] = compass.getAzimuth(); 
   data["bearing"] = compass.getBearing(data["azimuth"]); // This will divide the 360 range of the compass into 16 parts and return a value of 0-15 in clockwise order
-  compass.getDirection(direction, data["azimuth"]); // NSEW letters
-  data["direction"] = String(direction);
+  // compass.getDirection(direction, data["azimuth"]); // NSEW letters
+  // data["direction"] = String(direction);
 }
