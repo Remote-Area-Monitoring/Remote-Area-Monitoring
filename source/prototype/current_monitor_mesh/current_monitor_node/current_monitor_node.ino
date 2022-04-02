@@ -18,6 +18,7 @@ DynamicJsonDocument doc(2048);
 
 String getCurrent()
 {
+  doc["node_id"] = mesh.getNodeId();
   doc["bus_voltage"] = current.getBusVoltage_V();
   doc["shunt_voltage"] = current.getShuntVoltage_mV();
   doc["current"] = current.getCurrent_mA();
