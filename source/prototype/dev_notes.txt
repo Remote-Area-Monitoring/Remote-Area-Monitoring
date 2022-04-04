@@ -62,5 +62,22 @@ Ultrasonic Anemometer
 
 
 Rotary Position Sensor
-  - Melexis 
+  - Melexis
   - 4.5mm max separation distance from supplied magnet to guide ring
+
+Hall Effect Wind Speed Sensor
+  - use interrupts to count the pulses
+  - interrupts are very sensitive to noise
+  - noisy digital signal causes higher than expected count
+
+
+ --- Testing Notes ---
+04/04/22
+  Melexis Position Sensor
+    - voltage divider is not functioning as expected
+    - measures greater than 4v into analog pin on arduino
+
+  Hall Speed Sensor
+    - Pulses count is higher than expected
+    - calculating rpm as (pulses / 2) * 60 -> pulses = pulses per second
+    - Suspect noise on square wave causing issues
