@@ -19,7 +19,7 @@ DynamicJsonDocument data(4096);
 volatile unsigned int pulses = 0;
 const float WIND_SPEED_CONST = 1.0;
 
-const float WIND_DIR_MIN = 1000.0;
+const float WIND_DIR_MIN = 0.0;
 const float WIND_DIR_MAX = 4000.0;
 const float WIND_DIR_DEG_PER_COUNT = 1.0;
 
