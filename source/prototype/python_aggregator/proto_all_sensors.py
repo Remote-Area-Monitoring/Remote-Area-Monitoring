@@ -10,7 +10,10 @@ import json
 DEBUG = True
 
 def main():
-    port = serial.Serial('COM3', 115200, timeout=1)
+    try:
+        port = serial.Serial('COM3', 115200, timeout=1)
+    except:
+        port = serial.Serial('/dev/tty.usbserial-0001', 115200, timeout=1)
     time.sleep(2)
     ts = Timestamps()
     while True:
@@ -24,6 +27,7 @@ def main():
             try:
                 data = json.loads(line)
                 data['timestamp'] = ts.get_timestamp()
+                print('')
                 print(data)
                 for key, value in data.items():
                     print(key, ':', value)
