@@ -31,7 +31,7 @@ String getCurrent()
 // Needed for painless library
 void receivedCallback( uint32_t from, String &msg ) {
   Serial.printf("startHere: Received from %u msg=%s\n", from, msg.c_str());
-  mesh.sendBroadcast(getCurrent());
+  mesh.sendSingle(from, getCurrent());
 }
 
 void setup() {
