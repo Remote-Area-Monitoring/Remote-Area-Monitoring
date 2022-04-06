@@ -70,6 +70,17 @@ Hall Effect Wind Speed Sensor
   - interrupts are very sensitive to noise
   - noisy digital signal causes higher than expected count
 
+Camera
+  - process for reverse engineering ArduCam Software
+      1. Load serial logger modified example on cam arduino
+      2. Open ArduCam windows ui and open com port
+      3. select settings in arducam and capture
+      4. close com port in ArduCam
+      5. open com port in Arduino serial monitor
+      6. send a -1 to the arduino
+      7. take note of the logged bytes in decimal form
+      8. convert bytes to hex
+      9. serial write hex bytes using python
 
  --- Testing Notes ---
 04/04/22
