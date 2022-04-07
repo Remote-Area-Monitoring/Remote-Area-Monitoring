@@ -9,12 +9,15 @@ import json
 
 
 def main():
-    port = serial.Serial('COM3', 115200, timeout=1)
+    try:
+        port = serial.Serial('COM3', 115200, timeout=1)
+    except:
+        port = serial.Serial('/dev/tty.usbserial-0001', 115200, timeout=1)
     time.sleep(2)
-    # 01: 19:11.697 -> 2
+    # 01: 19:11.697 -> 2 -- set the camera and resolution - 2 = 360 - 4 = 640
     # 01: 19:11.697 -> 16
     # 01: 19:11.697 -> 45
-    port.write(b'\x02')
+    port.write(b'\x04')
     port.write(b'\x10')
     port.write(b'\x2D')
     data = port.readall()
@@ -27,7 +30,7 @@ def main():
     for i in range(data.find(b'\xff\xd8'), data.find(b'\xff\xd9') + 1):
         image.append(data[i])
     print('writing image file')
-    with open('test_img2.jpg', 'wb') as file:
+    with open('test_img5.jpg', 'wb') as file:
         file.write(bytes(image))
     print('done')
 
