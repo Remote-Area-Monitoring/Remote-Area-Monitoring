@@ -1,0 +1,9 @@
+EESchema-DOCLIB  Version 2.0
+#
+$CMP MLX90316EGO-BCG-000-SP
+D Board Mount Motion & Position Sensors Triaxis Programmable Rotary Position Sensor feat. Ana-PWM
+K
+F https://www.melexis.com/-/media/files/documents/datasheets/mlx90316-datasheet-melexis.pdf
+$ENDCMP
+#
+#End Doc Library

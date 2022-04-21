@@ -1,0 +1,16 @@
+.MLX90316EGO-BCG-000-SP :1 ;Board Mount Motion & Position Sensors Triaxis Programmable Rotary Position Sensor feat. Ana-PWM
+SOP65P640X110-16N
+*STM IC
+*NGS
+*PLB 1="VDIG1" 2="VSS1" 3="VDD1" 4="TEST 01" 5="'SS2'/SWITCH2" 6="SCLK2" 7="OUT2/MOSI/MISO2" 8="TEST 12" 9="VDIG2" 10="VSS2" 11="VDD2" 12="TEST 02" 13="'SS1'/SWITCH1" 14="SCLK1" 15="OUT1/MOSI/MISO1" 16="TEST 11"
+*MXP 16
+*DFN MLX90316EGO-BCG-000-SP
+~!Mouser Part Number (482-90316EGOBCG000SP)
+~!Link Mouser Price/Stock (https://www.mouser.co.uk/ProductDetail/Melexis/MLX90316EGO-BCG-000-SP?qs=KuGPmAKtFKWg%2F1YUwHrLHw%3D%3D)
+~!Manufacturer_Name (Melexis)
+~!Manufacturer_Part_Number (MLX90316EGO-BCG-000-SP)
+~!Link Datasheet (https://www.melexis.com/-/media/files/documents/datasheets/mlx90316-datasheet-melexis.pdf)
+~!Height (1.1mm)
+~!3D_Model (MLX90316EGO-BCG-000-SP)
+MLX90316EGO-BCG-000-SP
+1.1!U 2.1!U 3.1!U 4.1!U 5.1!U 6.1!U 7.1!U 8.1!U 16.1!U 15.1!U 14.1!U 13.1!U 12.1!U 11.1!U 10.1!U 9.1!U 

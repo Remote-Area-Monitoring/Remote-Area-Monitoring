@@ -1,0 +1,11 @@
+FILE_TYPE = MULTI_PHYS_TABLE;
+
+PART 'MLX90316EGO_BCG_000_SP'
+CLASS = IC
+{========================================================================================}
+:"MANUFACTURER_NAME", "MANUFACTURER_PART_NUMBER"= "PART_NUMBER", "JEDEC_TYPE", "PACK_TYPE", "MOUSER_PART_NUMBER", "MOUSER_PRICE/STOCK", "DESCRIPTION", "DATASHEET", "HEIGHT";
+{========================================================================================}
+ "Melexis", "MLX90316EGO-BCG-000-SP" (!) = "", "SOP65P640X110-16N", "Small Outline Packages", "482-90316EGOBCG000SP", "https://www.mouser.co.uk/ProductDetail/Melexis/MLX90316EGO-BCG-000-SP?qs=KuGPmAKtFKWg%2F1YUwHrLHw%3D%3D", "Board Mount Motion & Position Sensors Triaxis Programmable Rotary Position Sensor feat. Ana-PWM", "https://www.melexis.com/-/media/files/documents/datasheets/mlx90316-datasheet-melexis.pdf", "1.1 mm"
+END_PART
+
+END.

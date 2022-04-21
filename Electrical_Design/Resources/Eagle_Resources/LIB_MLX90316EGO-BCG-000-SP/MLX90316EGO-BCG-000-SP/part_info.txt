@@ -1,0 +1,9 @@
+Manufacturer=Melexis
+PartNumber=MLX90316EGO-BCG-000-SP
+PartCategory=Integrated Circuit
+PackageCategory=Small Outline Packages
+PinCount=16
+Version=1.1
+Released=2022-04-21 11:45:11
+Downloaded=2022-04-21 19:03:36
+3D=Y
