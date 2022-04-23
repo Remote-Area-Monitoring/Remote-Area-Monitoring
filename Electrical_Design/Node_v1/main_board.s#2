@@ -10578,6 +10578,9 @@ by exp-lbrs.ulp</description>
 <part name="C10" library="adafruit" library_urn="urn:adsk.eagle:library:420" deviceset="C-US" device="C1206" package3d_urn="urn:adsk.eagle:package:6240335/1" value="0.22uF"/>
 <part name="+3V10" library="supply1" library_urn="urn:adsk.eagle:library:371" deviceset="+3V3" device=""/>
 <part name="SUPPLY17" library="supply2" library_urn="urn:adsk.eagle:library:372" deviceset="GND" device=""/>
+<part name="R21" library="adafruit" library_urn="urn:adsk.eagle:library:420" deviceset="R-US_" device="R1206" package3d_urn="urn:adsk.eagle:package:6240569/1" value="4.7k"/>
+<part name="+3V11" library="supply1" library_urn="urn:adsk.eagle:library:371" deviceset="+3V3" device=""/>
+<part name="SUPPLY18" library="supply2" library_urn="urn:adsk.eagle:library:372" deviceset="GND" device=""/>
 </parts>
 <sheets>
 <sheet>
@@ -11504,6 +11507,13 @@ by exp-lbrs.ulp</description>
 <junction x="172.72" y="63.5"/>
 </segment>
 </net>
+<net name="GPIO17" class="0">
+<segment>
+<pinref part="U2" gate="G$1" pin="IO17"/>
+<wire x1="139.7" y1="81.28" x2="147.32" y2="81.28" width="0.1524" layer="91"/>
+<label x="147.32" y="81.28" size="1.778" layer="95" xref="yes"/>
+</segment>
+</net>
 </nets>
 </sheet>
 <sheet>
@@ -11519,9 +11529,9 @@ Address Selector</text>
 <attribute name="LAST_DATE_TIME" x="217.17" y="10.16" size="2.286" layer="94"/>
 <attribute name="SHEET" x="230.505" y="5.08" size="2.54" layer="94"/>
 </instance>
-<instance part="IC3" gate="G$1" x="55.88" y="48.26" smashed="yes">
-<attribute name="NAME" x="85.09" y="55.88" size="1.778" layer="95" align="center-left"/>
-<attribute name="VALUE" x="85.09" y="53.34" size="1.778" layer="96" align="center-left"/>
+<instance part="IC3" gate="G$1" x="71.12" y="35.56" smashed="yes">
+<attribute name="NAME" x="80.01" y="43.18" size="1.778" layer="95" align="center-left"/>
+<attribute name="VALUE" x="80.01" y="40.64" size="1.778" layer="96" align="center-left"/>
 </instance>
 <instance part="U3" gate="U1" x="63.5" y="114.3" smashed="yes">
 <attribute name="NAME" x="53.34" y="127" size="1.778" layer="95"/>
@@ -11584,6 +11594,16 @@ Address Selector</text>
 </instance>
 <instance part="SUPPLY17" gate="GND" x="238.76" y="78.74" smashed="yes" rot="R90">
 <attribute name="VALUE" x="241.935" y="76.835" size="1.778" layer="96" rot="R90"/>
+</instance>
+<instance part="R21" gate="G$1" x="66.04" y="45.72" smashed="yes" rot="R90">
+<attribute name="NAME" x="64.5414" y="41.91" size="1.778" layer="95" rot="R90"/>
+<attribute name="VALUE" x="69.342" y="41.91" size="1.778" layer="96" rot="R90"/>
+</instance>
+<instance part="+3V11" gate="G$1" x="86.36" y="58.42" smashed="yes">
+<attribute name="VALUE" x="83.82" y="53.34" size="1.778" layer="96" rot="R90"/>
+</instance>
+<instance part="SUPPLY18" gate="GND" x="66.04" y="20.32" smashed="yes">
+<attribute name="VALUE" x="64.135" y="17.145" size="1.778" layer="96"/>
 </instance>
 </instances>
 <busses>
@@ -11648,6 +11668,18 @@ Address Selector</text>
 <pinref part="R20" gate="G$1" pin="1"/>
 <pinref part="+3V9" gate="G$1" pin="+3V3"/>
 <wire x1="157.48" y1="88.9" x2="157.48" y2="86.36" width="0.1524" layer="91"/>
+</segment>
+<segment>
+<pinref part="R21" gate="G$1" pin="2"/>
+<wire x1="66.04" y1="50.8" x2="66.04" y2="53.34" width="0.1524" layer="91"/>
+<pinref part="+3V11" gate="G$1" pin="+3V3"/>
+<wire x1="66.04" y1="53.34" x2="86.36" y2="53.34" width="0.1524" layer="91"/>
+<wire x1="86.36" y1="53.34" x2="86.36" y2="55.88" width="0.1524" layer="91"/>
+<pinref part="IC3" gate="G$1" pin="VDD"/>
+<wire x1="104.14" y1="35.56" x2="106.68" y2="35.56" width="0.1524" layer="91"/>
+<wire x1="106.68" y1="35.56" x2="106.68" y2="53.34" width="0.1524" layer="91"/>
+<wire x1="106.68" y1="53.34" x2="86.36" y2="53.34" width="0.1524" layer="91"/>
+<junction x="86.36" y="53.34"/>
 </segment>
 </net>
 <net name="N$25" class="0">
@@ -11719,6 +11751,12 @@ Address Selector</text>
 <pinref part="SUPPLY17" gate="GND" pin="GND"/>
 <wire x1="236.22" y1="78.74" x2="187.96" y2="78.74" width="0.1524" layer="91"/>
 <junction x="187.96" y="78.74"/>
+</segment>
+<segment>
+<pinref part="IC3" gate="G$1" pin="GND"/>
+<wire x1="71.12" y1="27.94" x2="66.04" y2="27.94" width="0.1524" layer="91"/>
+<pinref part="SUPPLY18" gate="GND" pin="GND"/>
+<wire x1="66.04" y1="27.94" x2="66.04" y2="22.86" width="0.1524" layer="91"/>
 </segment>
 </net>
 <net name="SDA" class="0">
@@ -11796,6 +11834,17 @@ Address Selector</text>
 <pinref part="C10" gate="G$1" pin="2"/>
 <wire x1="228.6" y1="91.44" x2="236.22" y2="91.44" width="0.1524" layer="91"/>
 <wire x1="236.22" y1="91.44" x2="236.22" y2="93.98" width="0.1524" layer="91"/>
+</segment>
+</net>
+<net name="GPIO17" class="0">
+<segment>
+<pinref part="R21" gate="G$1" pin="1"/>
+<pinref part="IC3" gate="G$1" pin="DQ"/>
+<wire x1="66.04" y1="40.64" x2="66.04" y2="35.56" width="0.1524" layer="91"/>
+<wire x1="66.04" y1="35.56" x2="71.12" y2="35.56" width="0.1524" layer="91"/>
+<wire x1="66.04" y1="35.56" x2="58.42" y2="35.56" width="0.1524" layer="91"/>
+<junction x="66.04" y="35.56"/>
+<label x="58.42" y="35.56" size="1.778" layer="95" rot="R180" xref="yes"/>
 </segment>
 </net>
 </nets>

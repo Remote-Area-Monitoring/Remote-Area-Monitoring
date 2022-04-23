@@ -8308,6 +8308,8 @@ In this library the device names are the same as the pin names of the symbols, t
 <sheet>
 <plain>
 <text x="48.26" y="73.66" size="1.778" layer="91">4.7uH</text>
+<text x="15.24" y="132.08" size="1.778" layer="91">Solar Panel Input</text>
+<text x="210.82" y="134.62" size="1.778" layer="91">Battery Terminals</text>
 </plain>
 <instances>
 <instance part="FRAME1" gate="G$1" x="0" y="0" smashed="yes">
