@@ -82,4 +82,5 @@ project as required.
 
 #### Resources
 - [TinyDB Documentation](https://tinydb.readthedocs.io/en/latest/)
-
+- [Dictionaries in Python](https://www.w3schools.com/python/python_dictionaries.asp)
+- [List of Dictionaries in Python](https://pythonexamples.org/python-list-of-dictionaries/)
