@@ -14,8 +14,9 @@ class Command:
         self.port = self.__get_connection()
 
     def __get_connection(self):
+        # TODO: Move first try block to a function to check connection for any OS
         try:
-            port = Serial('COM3', self.baud, timeout=self.serial_timeout)
+            port = Serial(self.port, self.baud, timeout=self.serial_timeout)
             startup = time.time()
             while True:
                 port.write('{"node_id":0, "message":"None"}'.encode())
