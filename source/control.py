@@ -2,14 +2,15 @@ import serial
 from serial import Serial
 import json
 import time
-from time import sleep
+from source.timekeeper import Timestamps
 
 
 class Command:
     def __init__(self, port, baud=115200):
         self.port = port
         self.baud = baud
-        self.serial_timeout = 1
+        self.serial_timeout = 2
+        self.ts = Timestamps()
         self.port = self.__get_connection()
 
     def __get_connection(self):
@@ -55,12 +56,25 @@ class Command:
                 message = self.port.readline()
                 message = message.decode().split('*')[0]
                 if '{' in message and '}' in message:
-                    print(message)
+                    # print(message)
                     data = json.loads(message)
                     return data
             except Exception as e:
                 print(e)
                 continue
+
+    def get_sensor_data(self, node_id):
+        self.send(node_id, 'sensor_data')
+        data = self.receive_json()
+        if data is None:
+            return data
+        elif 'bus_voltage_V' not in data:
+            data = self.receive_json()
+        if data is None:
+            return data
+        data_with_timestamp = {'timestamp': self.ts.get_timestamp()}
+        data_with_timestamp.update(data)
+        return data_with_timestamp
 
 
 def main():
