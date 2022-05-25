@@ -1,12 +1,12 @@
-from database import Database
-from timekeeper import Timestamps
-from settings import Settings
+from source.util.database import Database
+from source.util.timekeeper import Timestamps
+from source.util.settings import Settings
 
 
 class Nodes:
     def __init__(self):
         self.ts = Timestamps()
-        self.config = Settings('general.config')
+        self.config = Settings('config/general.config')
         self.db = Database(self.config.get_setting('databases', 'nodes_db_path'))
 
     def add_node(self, node_id, status, lat, lon, node_config: dict = None):

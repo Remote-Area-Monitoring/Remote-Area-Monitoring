@@ -53,7 +53,7 @@ link.
 #### Resources
 
 - [Plotly Documentation](https://plotly.com/python/maps/)
-- [Map Module](source/map.py)
+- [Map Module](source/website/map.py)
 
 
 ## Graphs

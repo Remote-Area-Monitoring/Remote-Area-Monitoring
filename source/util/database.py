@@ -1,6 +1,6 @@
 from tinydb import TinyDB
 from tinydb import Query
-from timekeeper import Timestamps
+from source.util.timekeeper import Timestamps
 
 
 class Database:

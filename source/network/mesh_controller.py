@@ -1,7 +1,7 @@
-from control import Command
-from timekeeper import Timestamps
-from database import Database
-from settings import Settings
+from source.network.control import Command
+from source.util.timekeeper import Timestamps
+from source.util.database import Database
+from source.util.settings import Settings
 
 
 class Controller:

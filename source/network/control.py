@@ -2,7 +2,7 @@ import serial
 from serial import Serial
 import json
 import time
-from source.timekeeper import Timestamps
+from source.util.timekeeper import Timestamps
 
 
 class Command:
