@@ -46,7 +46,8 @@ void sendMessage()
 
     if (nodeId == 0)
     {
-      Serial.println(mesh.subConnectionJson());
+      Serial.print(mesh.subConnectionJson());
+      Serial.println("*");
     }
     else if (nodeId == 1)
     {
@@ -59,7 +60,7 @@ void sendMessage()
       mesh.sendSingle(nodeId, message);
     }
   }
-  
+
   taskSendMessage.setInterval(TASK_SECOND * 1);
 //  serializeJson(command, Serial);
 //  Serial.println("*");
@@ -80,7 +81,7 @@ void newConnectionCallback(uint32_t nodeId) {
 }
 
 
-void setup() 
+void setup()
 {
   Serial.begin(115200);
 
@@ -92,7 +93,7 @@ void setup()
   taskSendMessage.enable();
 }
 
-void loop() 
+void loop()
 {
   mesh.update();
 }
