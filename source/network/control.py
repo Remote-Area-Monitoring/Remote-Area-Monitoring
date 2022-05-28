@@ -12,21 +12,12 @@ class Command:
         self.serial_timeout = 2
         self.ts = Timestamps()
         self.port = self.__get_connection()
+        self.network_connection = self.is_connected()
 
     def __get_connection(self):
         # TODO: Move first try block to a function to check connection for any OS
         try:
-            port = Serial(self.port, self.baud, timeout=self.serial_timeout)
-            startup = time.time()
-            while True:
-                port.write('{"node_id":0, "message":"None"}'.encode())
-                line = port.readline().decode()
-                print(line)
-                if 'subs' in line.lower():
-                    return port
-                if time.time() - startup > 120:
-                    print("TIMEOUT ERROR: Node Failed to Connect to Mesh")
-                    return None
+            return Serial(self.port, self.baud, timeout=self.serial_timeout)
         except serial.SerialException:
             print('Windows COM port not found')
         try:
@@ -36,11 +27,31 @@ class Command:
         print('No COM Ports Found')
         return None
 
-    # def __get_status(self):
-    #     if self.startup is True:
-    #         start = time.time()
-    #         while True:
-    #             if self.receive_json()
+    def get_topology(self):
+        self.port.write('{"node_id":0, "message":"None"}'.encode())
+        data = self.receive_json()
+        if data is None:
+            return data
+        elif 'nodeId' not in data:
+            data = self.receive_json()
+        if 'nodeId' not in data:
+            return None
+        print(data)
+        return data
+
+    def is_connected(self):
+        if self.port is None:
+            print('No com port found - not connected')
+            return False
+        startup = time.time()
+        while True:
+            topo = self.get_topology()
+            if topo is not None:
+                if 'subs' in topo:
+                    return True
+            if time.time() - startup > 120:
+                print("TIMEOUT ERROR: Node Failed to Connect to Mesh")
+                return False
 
     def send(self, node_id, message):
         msg = {'node_id': node_id, 'message': message}
