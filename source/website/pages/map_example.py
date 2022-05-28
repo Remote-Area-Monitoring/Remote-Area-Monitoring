@@ -5,6 +5,7 @@ import dash_bootstrap_components as dbc
 class MapExample:
     def get_layout(self):
         layout = html.Div([
+            html.Br(),
             self.__get_map_view(),
             html.Br(),
             self.__get_input_with_label('Latitude', 'map-example-lat', '28.602374', type='number', value='28.602374',
