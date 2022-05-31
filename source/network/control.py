@@ -3,6 +3,7 @@ from serial import Serial
 import json
 import time
 from source.util.timekeeper import Timestamps
+import re
 
 
 class Command:
@@ -16,6 +17,7 @@ class Command:
 
     def __get_connection(self):
         # TODO: Move first try block to a function to check connection for any OS
+        print(self.port)
         try:
             return Serial(self.port, self.baud, timeout=self.serial_timeout)
         except serial.SerialException:
@@ -38,6 +40,26 @@ class Command:
             return None
         print(data)
         return data
+
+    def list_connected_nodes(self):
+        topo = self.get_topology()
+        # topo = {'nodeId': 2222635529, 'subs': [{'nodeId': 2222631473, 'subs': [{'nodeId': 2222817205}]}]}
+        if topo is None:
+            return None
+        elif 'subs' not in topo:
+            return None
+        # nodes = list()
+        topo.pop('nodeId')
+        topo = json.dumps(topo)
+        nodes = re.findall(r'\d+', topo)
+        int_nodes = list()
+        for node in nodes:
+            try:
+                int_nodes.append(int(node))
+            except Exception as e:
+                print('Invalid Node ID: ', node)
+                print(e)
+        return int_nodes
 
     def is_connected(self):
         if self.port is None:
@@ -91,8 +113,9 @@ class Command:
 
 def main():
     command = Command('COM3')
-    command.send(2222631473, 'This is a test message')
-    print(command.receive_json())
+    # command.send(4144723677, 'This is a test message')
+    # print(command.receive_json())
+    print(command.get_topology())
 
 
 if __name__ == '__main__':
