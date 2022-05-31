@@ -6,8 +6,14 @@ from subprocess import check_output
 import socket
 from flask import request
 from source.util.database import Database
+from source.network.control import Command
+from source.util.settings import Settings
 from source.util.timekeeper import Timestamps
-from source.website.pages import home, map_example
+from source.website.pages import home, map_example, node_table
+
+config = Settings('general.config')
+nodes_db = Database(config.get_setting('databases', 'nodes_db_path'))
+mesh = Command(config.get_setting('mesh_network', 'port'))
 
 
 navbar = dbc.NavbarSimple(
@@ -17,6 +23,7 @@ navbar = dbc.NavbarSimple(
             children=[
                 dbc.DropdownMenuItem("Dev Tools", header=True),
                 dbc.DropdownMenuItem("Map Test", href="/map-example"),
+                dbc.DropdownMenuItem("Nodes List Table", href="/nodes-table"),
             ],
             nav=True,
             in_navbar=True,
@@ -64,16 +71,18 @@ def update_example_map(n_clicks, lat, lon, size, zoom):
 def display_page(pathname):
     if pathname == '/map-example':
         return map_example.MapExample().get_layout()
+    elif pathname == '/nodes-table':
+        return node_table.NodeTable(nodes_db, mesh).get_layout()
     else:
         return home.Home().get_layout()
 
 
 if __name__ == '__main__':
     try:
-        ip_address = check_output(["hostname", "-I"]).decode("utf-8").split(" ")[0]
-    except:
         ip_address = socket.gethostbyname(socket.gethostname())
+    except:
+        ip_address = check_output(["hostname", "-I"]).decode("utf-8").split(" ")[0]
     print("IP Address: ", ip_address)
     port = 8050
     print("Port: ", port)
-    app.run_server(debug=True, host=ip_address, port=port)
+    app.run_server(debug=False, host=ip_address, port=port)
