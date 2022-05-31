@@ -1,5 +1,27 @@
+# Prep for Demo
+
+## Hardware
+- Take / store pictures of hardware creation
+- discuss what is working 
+- discuss what is not working
+## Website
+### Pages for Demo
+- Map View
+  - Point map of all nodes 
+  - hexagon map
+  - gradient map?
+  - any others?
+- Graph View
+  - line over time 
+  - scatter plot with trend line 
+- Management 
+  - node table 
+  - edit node
+  - add node 
+  - remove node
+
 # Development Tasks
-These tasks will be in support of developing our system 
+These tasks will be in support of developing our system
 
 ## Logging
 ### Development
