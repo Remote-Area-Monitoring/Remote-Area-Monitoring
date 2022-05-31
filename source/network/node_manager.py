@@ -4,10 +4,13 @@ from source.util.settings import Settings
 
 
 class Nodes:
-    def __init__(self):
+    def __init__(self, database_obj=None):
         self.ts = Timestamps()
         self.config = Settings('general.config')
-        self.db = Database(self.config.get_setting('databases', 'nodes_db_path'))
+        if database_obj is None:
+            self.db = Database(self.config.get_setting('databases', 'nodes_db_path'))
+        else:
+            self.db = database_obj
 
     def add_node(self, node_id, status, lat, lon, node_config: dict = None):
         existing_record = self.db.get_data_single_field('node_id', node_id)
