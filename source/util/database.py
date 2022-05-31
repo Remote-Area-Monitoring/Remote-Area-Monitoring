@@ -37,3 +37,6 @@ class Database:
         if timestamp is not None:
             return self.db.search((Query().fragment(dataobj)) & (Query()['timestamp'] >= timestamp))
         return self.db.search(Query().fragment(dataobj))
+
+    def remove_single_record(self, dataobj):
+        return self.db.remove(Query().fragment(dataobj))
