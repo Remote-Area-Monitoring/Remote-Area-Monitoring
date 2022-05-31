@@ -1,10 +1,15 @@
 from configparser import ConfigParser
 import json
+import os
 
 
 class Settings:
     def __init__(self, settings_file):
-        self.settings_file = settings_file
+        try:
+            self.settings_file = os.getcwd().split('source\\')[0] + 'source\\config\\' + settings_file
+        except Exception as e:
+            print(e)
+            self.settings_file = settings_file
         self.parser = ConfigParser()
 
     def get_sections(self):
@@ -76,3 +81,12 @@ class Settings:
         except Exception as e:
             print(e)
             return -1
+
+
+def main():
+    config = Settings('general.config')
+    print(config.get_setting('mesh_network', 'port'))
+
+
+if __name__ == '__main__':
+    main()
