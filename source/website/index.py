@@ -6,14 +6,14 @@ from subprocess import check_output
 import socket
 from flask import request
 from source.util.database import Database
-from source.network.control import Command
+from source.network.mesh import Mesh
 from source.util.settings import Settings
 from source.util.timekeeper import Timestamps
-from source.website.pages import home, map_example, node_table
+from source.website.pages import home, map_example, node_table, updater
 
 config = Settings('general.config')
 nodes_db = Database(config.get_setting('databases', 'nodes_db_path'))
-mesh = Command(config.get_setting('mesh_network', 'port'))
+mesh = Mesh()
 
 
 navbar = dbc.NavbarSimple(
@@ -72,7 +72,9 @@ def display_page(pathname):
     if pathname == '/map-example':
         return map_example.MapExample().get_layout()
     elif pathname == '/nodes-table':
-        return node_table.NodeTable(nodes_db, mesh).get_layout()
+        return node_table.NodeTable(mesh).get_layout()
+    elif 'update' in pathname:
+        return updater.Updater(mesh).get_layout()
     else:
         return home.Home().get_layout()
 
@@ -85,4 +87,6 @@ if __name__ == '__main__':
     print("IP Address: ", ip_address)
     port = 8050
     print("Port: ", port)
+    config.set_setting('website', 'ip_address', str(ip_address))
+    config.set_setting('website', 'port', str(port))
     app.run_server(debug=False, host=ip_address, port=port)
