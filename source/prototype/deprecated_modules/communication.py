@@ -1,6 +1,6 @@
 from source.util.database import Database
 from source.util.settings import Settings
-from source.network.control import Command
+from source.network.mesh import Mesh
 from source.util.timekeeper import Timestamps
 from serial import Serial
 import serial
@@ -98,7 +98,7 @@ class Comm:
         commands = sorted(cfg.mesh_requests, key=lambda d: d['priority'])
         for command in commands:
             if command['status'] == 'incomplete':
-                print('Processing Command:', command)
+                print('Processing Mesh:', command)
                 if command['command'] == 'get_sensor_data':
                     command['response'] = self.get_sensor_data(command['node_id'])
                     command['status'] = 'complete'

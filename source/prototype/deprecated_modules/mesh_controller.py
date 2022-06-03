@@ -1,4 +1,4 @@
-from source.network.control import Command
+from source.network.mesh import Mesh
 from source.util.timekeeper import Timestamps
 from source.util.database import Database
 from source.util.settings import Settings
@@ -11,7 +11,7 @@ class Controller:
         nodes_db_path = self.config.get_setting('databases', 'nodes_db_path')
         self.nodes_db = Database(self.config.get_setting('databases', 'nodes_db_path'))
         self.sensor_data_db = Database(self.config.get_setting('databases', 'sensor_data_db_path'))
-        self.mesh = Command(self.config.get_setting('mesh_network', 'port'))
+        self.mesh = Mesh(self.config.get_setting('mesh_network', 'port'))
 
     def update_nodes_sensor_data(self):
         records = list()
