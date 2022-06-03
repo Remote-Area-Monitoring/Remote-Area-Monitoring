@@ -5,6 +5,7 @@
 #include <Adafruit_INA219.h>
 #include <QMC5883LCompass.h>
 #include <painlessMesh.h>
+#include <DallasTemperature.h>
 
 #define   MESH_PREFIX     "ram"
 #define   MESH_PASSWORD   "SeniorDesign1"
@@ -13,6 +14,7 @@
 #define WIND_SPEED_PIN 39
 #define WIND_DIR_PIN 34
 #define SOIL_PIN 36
+#define DS18_PIN 17
 
 Adafruit_INA219 ina;
 Adafruit_BME280 bme;
@@ -20,6 +22,8 @@ Adafruit_CCS811 ccs;
 QMC5883LCompass compass;
 Scheduler userScheduler;
 painlessMesh mesh;
+OneWire oneWire(DS18_PIN);
+DallasTemperature ds18(&oneWire);
 
 DynamicJsonDocument data(4096);
 
@@ -38,6 +42,11 @@ void getSoilMoisture();
 void getWindSpeed();
 void getWindDirection();
 void getCompassData();
+void getDallasTemperature();
+float getCalibratrionTemperature();
+float getTemperatureOffset();
+void getBMEActual();
+
 
 String allSensorDataString();
 
@@ -56,6 +65,7 @@ void setup()
   bme.begin(0x76); // pass the default address otherwise the sensor is not found
   ccs.begin();
   compass.init();
+  ds18.begin();
 
   pinMode(WIND_SPEED_PIN, INPUT);
   attachInterrupt(WIND_SPEED_PIN, countPulses, RISING);
@@ -86,6 +96,8 @@ String allSensorDataString()
   getWindSpeed();
   getWindDirection();
   getCompassData();
+  getDallasTemperature();
+  getBMEActual();
 
   String str = "";
   serializeJson(data, str);
@@ -107,6 +119,9 @@ void getPowerData()
 
 void getAtmosphericData()
 {
+  getTemperatureOffset();
+  bme.setTemperatureCompensation(data["offset_temperature"]);
+  data["bme_offset_temperature"] = bme.getTemperatureCompensation();
   data["air_temperature_C"] = bme.readTemperature();
   data["humidity"] = bme.readHumidity();
   data["air_pressure_Pa"] = bme.readPressure();
@@ -169,4 +184,35 @@ void getCompassData()
   data["bearing"] = compass.getBearing(data["azimuth"]); // This will divide the 360 range of the compass into 16 parts and return a value of 0-15 in clockwise order
   // compass.getDirection(direction, data["azimuth"]); // NSEW letters
   // data["direction"] = String(direction);
+}
+
+float getCalibrationTemperature()
+{
+  ds18.requestTemperatures();
+  float temp = ds18.getTempCByIndex(0);
+  if (temp == DEVICE_DISCONNECTED_C)
+  {
+    return bme.readTemperature();
+  }
+  else
+  {
+    return temp;
+  }
+}
+
+float getTemperatureOffset()
+{
+  float offset = getCalibrationTemperature() - bme.readTemperature();
+  data["offset_temperature"] = offset;
+  return offset;
+}
+
+void getDallasTemperature()
+{
+  data["calibration_temperature"] = getCalibrationTemperature();
+}
+
+void getBMEActual()
+{
+  data["bme_actual_temperature"] = bme.readTemperature();
 }
