@@ -3,12 +3,15 @@ import source.util.database
 import plotly.graph_objects as go
 import pandas as pd
 from dash import html, dcc
+from source.util.settings import Settings
+from source.util.database import Database
 
 
 class NodeTable:
-    def __init__(self, nodes_database_obj: source.util.database.Database, control_obj: source.network.control.Command):
-        self.db = nodes_database_obj
-        self.command = control_obj
+    def __init__(self, mesh: source.network.mesh.Mesh):
+        self.config = Settings('general.config')
+        self.db = Database(self.config.get_setting('databases', 'nodes_db_path'))
+        self.mesh = mesh
 
     def get_layout(self):
         layout = html.Div([
@@ -18,7 +21,7 @@ class NodeTable:
         return layout
 
     def __get_node_data(self):
-        connected_nodes = self.command.list_connected_nodes()
+        connected_nodes = self.mesh.list_connected_nodes()
         nodes = self.db.get_all()
         print(nodes)
         print(connected_nodes)
