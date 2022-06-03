@@ -3,14 +3,20 @@ from serial import Serial
 import json
 import time
 from source.util.timekeeper import Timestamps
+from source.util.database import Database
+from source.util.settings import Settings
 import re
 
 
-class Command:
-    def __init__(self, port, baud=115200):
-        self.port = port
-        self.baud = baud
-        self.serial_timeout = 2
+class Mesh:
+    def __init__(self):
+        self.ts = Timestamps()
+        self.config = Settings('general.config')
+        self.nodes_db = Database(self.config.get_setting('databases', 'nodes_db_path'))
+        self.sensor_data_db = Database(self.config.get_setting('databases', 'sensor_data_db_path'))
+        self.port = self.config.get_setting('mesh_network', 'port')
+        self.baud = self.config.get_int_setting('mesh_network', 'baud_rate')
+        self.serial_timeout = self.config.get_int_setting('mesh_network', 'serial_timeout')
         self.ts = Timestamps()
         self.port = self.__get_connection()
         self.network_connection = self.is_connected()
@@ -80,11 +86,11 @@ class Command:
         msg = json.dumps(msg).encode()
         self.port.write(msg)
 
-    def receive_json(self, key=None, timeout=60):
-        message = ''
-        start = time.time()
+    def receive_json(self):
+        timeout = self.config.get_int_setting('mesh_network', 'receive_timeout')
+        start = self.ts.get_timestamp()
         while True:
-            if time.time() - start > timeout:
+            if self.ts.get_timestamp() - start > timeout:
                 return None
             try:
                 message = self.port.readline()
@@ -110,9 +116,23 @@ class Command:
         data_with_timestamp.update(data)
         return data_with_timestamp
 
+    def update_nodes_sensor_data(self):
+        records = list()
+        nodes = self.nodes_db.get_all()
+        for node in nodes:
+            if node['status'] == 'active':
+                data = self.get_sensor_data(node['node_id'])
+                if data is not None:
+                    print(data)
+                    records.append(data)
+                else:
+                    # TODO: record error when node data is not found
+                    print('Error: No data available for node', node['node_id'])
+        self.sensor_data_db.insert_multiple(records)
+
 
 def main():
-    command = Command('COM3')
+    command = Mesh()
     # command.send(4144723677, 'This is a test message')
     # print(command.receive_json())
     print(command.get_topology())
