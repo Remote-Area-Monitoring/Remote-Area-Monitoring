@@ -62,7 +62,7 @@ def update_example_map(n_clicks, lat, lon, size, zoom):
         lon = -81.200164
         size = 8.0
         zoom = 8
-    return Map().get_map_div(lat, lon, size=size, zoom=zoom)
+    return Map().get_single_point_map_div(lat, lon, size=size, zoom=zoom)
 
 
 # Navigate pages
