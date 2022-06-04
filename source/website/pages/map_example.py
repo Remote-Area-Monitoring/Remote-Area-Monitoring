@@ -21,7 +21,8 @@ class MapExample:
                                         debounce=True),
             html.Br(),
             self.__get_button(),
-            html.Br()
+            html.Br(),
+
             ],
         )
         return layout
