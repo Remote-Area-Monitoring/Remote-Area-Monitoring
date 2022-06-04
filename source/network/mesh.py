@@ -77,7 +77,7 @@ class Mesh:
             if topo is not None:
                 if 'subs' in topo:
                     return True
-            if time.time() - startup > 120:
+            if time.time() - startup > self.config.get_int_setting('mesh_network', 'connection_timeout'):
                 print("TIMEOUT ERROR: Node Failed to Connect to Mesh")
                 return False
 
