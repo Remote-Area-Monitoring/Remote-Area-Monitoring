@@ -135,7 +135,17 @@ def main():
     command = Mesh()
     # command.send(4144723677, 'This is a test message')
     # print(command.receive_json())
-    print(command.get_topology())
+    # print(command.get_topology())
+    # print(command.get_sensor_data(4144723677))
+    # print(command.get_sensor_data(2222631473))
+    start = 0
+    while True:
+        try:
+            if time.time() - start > 5:
+                start = time.time()
+                print(command.get_sensor_data(4144723677))
+        except KeyboardInterrupt:
+            exit(0)
 
 
 if __name__ == '__main__':
