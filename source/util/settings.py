@@ -85,7 +85,7 @@ class Settings:
 
 def main():
     config = Settings('general.config')
-    print(config.get_setting('mesh_network', 'port'))
+    print(config.get_setting('databases', 'nodes_db_path'))
 
 
 if __name__ == '__main__':
