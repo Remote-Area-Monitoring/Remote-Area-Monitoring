@@ -1,7 +1,15 @@
 #include <Wire.h>
+#include <Adafruit_Sensor.h>
+#include <Adafruit_BME280.h>
+#include <Adafruit_CCS811.h>
+#include <Adafruit_INA219.h>
+#include <QMC5883LCompass.h>
+#include <painlessMesh.h>
+#include <DallasTemperature.h>
 #include <ArduCAM.h>
 #include <SPI.h>
-#include "memorysaver.h"
+#include "memorysaver.h"`
+//#include <ArduinoJson.h>
 
 #if !(defined OV2640_MINI_2MP_PLUS)
   #error Please select the hardware platform and camera module in the ../libraries/ArduCAM/memorysaver.h file
@@ -15,6 +23,10 @@ uint8_t read_fifo_burst(ArduCAM myCAM);
 bool is_header = false;
 int mode = 0;
 uint8_t start_capture = 0;
+
+//DynamicJsonDocument pixelData(16384);
+StaticJsonDocument<25000> pixelData;
+JsonArray pixels = pixelData.createNestedArray("pixels");
 
 
 int capture();
@@ -120,7 +132,7 @@ int capture()
   //Start capture
   Serial.println("Capture Start");
   myCAM.start_capture();
-  delay(1000);
+  delay(500);
   Serial.print("Status Bit:");
   Serial.println(myCAM.get_bit(ARDUCHIP_TRIG, CAP_DONE_MASK));
 
@@ -144,23 +156,42 @@ int capture()
     myCAM.set_fifo_burst();//Set fifo burst mode
     temp =  SPI.transfer(0x00);
     length --;
+    int count = 0;
+    int packetNumber = 0;
+    initialize_pixel_data(0);
     while ( length-- )
     {
+      if (count >= 1000)
+      {
+        serializeJson(pixelData, Serial);
+        initialize_pixel_data(packetNumber);
+        packetNumber++;
+        count = 0;
+      }
       temp_last = temp;
       temp =  SPI.transfer(0x00);
       if (is_header == true)
       {
-        Serial.write(temp);
+//        Serial.write(temp);
+        pixels.add(temp);
+        count++;
       }
       else if ((temp == 0xD8) & (temp_last == 0xFF))
       {
         is_header = true;
-        Serial.println(F("ACK IMG END"));
-        Serial.write(temp_last);
-        Serial.write(temp);
+//        Serial.println(F("ACK IMG END"));
+//        Serial.write(temp_last);
+        pixels.add(temp_last);
+        count++;
+//        Serial.write(temp);
+        pixels.add(temp);
+        count++;
       }
       if ( (temp == 0xD9) && (temp_last == 0xFF) ) //If find the end ,break while,
-      break;
+      {
+        serializeJson(pixelData, Serial);
+        break;
+      }
       delayMicroseconds(15);
     }
     myCAM.CS_HIGH();
@@ -168,4 +199,13 @@ int capture()
     myCAM.clear_fifo_flag();
   }
   return 1;
+}
+
+
+void initialize_pixel_data(long packetNumber)
+{
+  pixelData.clear();
+  pixelData["node_id"] = 12345; // need to get node id 
+  pixelData["packet_number"] = packetNumber;
+  pixels = pixelData.createNestedArray("pixels");
 }
