@@ -5,16 +5,20 @@ import time
 from source.util.timekeeper import Timestamps
 from source.util.database import Database
 from source.util.settings import Settings
+from source.util.image import Image
 import re
 import sys
+from time import sleep
 
 
 class Mesh:
     def __init__(self):
         self.ts = Timestamps()
+        self.image = Image()
         self.config = Settings('general.config')
         self.nodes_db = Database(self.config.get_setting('databases', 'nodes_db_path'))
         self.sensor_data_db = Database(self.config.get_setting('databases', 'sensor_data_db_path'))
+        self.images_db = Database(self.config.get_setting('databases', 'images_database_path'))
         self.port = self.config.get_setting('mesh_network', 'port')
         self.baud = self.config.get_int_setting('mesh_network', 'baud_rate')
         self.serial_timeout = self.config.get_int_setting('mesh_network', 'serial_timeout')
@@ -141,37 +145,84 @@ class Mesh:
             if self.ts.get_timestamp() - start > timeout:
                 return None
             try:
-                packet = self.port.readline()
-                packet = packet.decode().replace('*', '')
-                # print(packet)
-                data = json.loads(packet)
-                if 'pixels' in data:
-                    print(len(data['pixels']))
-                    print(packet)
-                    packets.append(data)
-                elif 'total_packets_sent' in data:
-                    total_packets = data['total_packets_sent']
-                    print(data)
-                    print(total_packets)
+                raw_packets = self.port.readall()
+                packets = raw_packets.decode()
+                # print(packets)
+                packets = packets.split('*')
+                # for packet in packets:
+                #     print(packet)
+                data = list()
+                packet_info = dict()
+                for packet in packets:
+                    try:
+                        packet_data = json.loads(packet)
+                    except Exception as e:
+                        # print('failed to load json')
+                        continue
+                    if 'pixels' in packet_data:
+                        print(len(packet_data['pixels']))
+                        data.append(packet_data)
+                    elif 'total_packets_sent' in packet_data:
+                        total_packets = packet_data['total_packets_sent']
+                        packet_info = packet_data
+                        print(packet_data)
+                        print(total_packets)
+                        print(len(data))
                 if total_packets is not None:
-                    if len(packets) >= total_packets:
+                    if len(data) >= total_packets:
                         print('All Packets Received')
-                        break
+                        print("Transmission Time:", self.ts.get_timestamp() - start)
+                        return data, packet_info
+                else:
+                    print('Incomplete Pixel Data')
+                    print('Expected: ', total_packets, 'Received: ', len(data))
+                    print(data)
+                    return None, None
             except Exception as e:
                 print(e)
                 continue
-        print("Transmission Time:", self.ts.get_timestamp() - start)
-        return packets
 
     def get_image_data(self, node_id):
         self.send(node_id, 'image')
+        packet_data, packet_info = self.receive_pixel_packets()
+        if packet_data is None:
+            return None
         pixels = list()
-        packet_data = self.receive_pixel_packets()
+        # for record in packet_data:
+        #     print(record)
+        # print(packet_info)
+        # packet_data = self.receive_pixel_packets()
         packets = sorted(packet_data, key=lambda d: d['packet_number'])
         for packet in packets:
             pixels.extend(packet['pixels'])
-        pixel_data = bytearray(pixels)
-        return pixel_data
+        image_data = dict()
+        image_data['node_id'] = node_id
+        image_data['timestamp'] = self.ts.get_timestamp()
+        image_data['total_packets_received'] = packet_info['total_packets_sent']
+        image_data['pixels'] = pixels
+        return image_data
+
+    def update_nodes_image_data(self):
+        # TODO: implement interval setting
+        # TODO: implement node config
+        attempts = self.config.get_int_setting('mesh_network', 'image_retry')
+        for attempt in range(0, attempts):
+            image_data = self.get_image_data(4144885065)
+            # print(image_data)
+            if image_data is not None:
+                if self.image.validate_pixel_data(image_data['pixels']):
+                    self.images_db.insert(image_data)
+                    print('Image Saved to Database')
+                    return None
+                else:
+                    print('Invalid Pixel Data - Attempt', attempt + 1, 'of', attempts)
+                    continue
+            else:
+                print('No Pixel Data - Attempt', attempt + 1, 'of', attempts)
+                continue
+
+
+
 
     def write_image(self):
         pixels = self.get_image_data(4144885065)
@@ -179,7 +230,7 @@ class Mesh:
         test_obj['pixel_data'] = pixels
         print(test_obj)
         print("test_obj size: {} bytes".format(sys.getsizeof(test_obj)))
-        with open('test_img7.jpg', 'wb') as file:
+        with open('test_img8.jpg', 'wb') as file:
             file.write(bytes(pixels))
         print('done')
 
@@ -202,7 +253,9 @@ def main():
     #     except KeyboardInterrupt:
     #         exit(0)
     # command.get_topology()
-    command.write_image()
+    while True:
+        command.update_nodes_image_data()
+        sleep(5 * 60)
 
 
 if __name__ == '__main__':
