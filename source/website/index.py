@@ -9,7 +9,7 @@ from source.util.database import Database
 from source.network.mesh import Mesh
 from source.util.settings import Settings
 from source.util.timekeeper import Timestamps
-from source.website.pages import home, map_example, node_table, updater, example_maps
+from source.website.pages import home, map_example, node_table, updater, example_maps, image_example
 
 config = Settings('general.config')
 nodes_db = Database(config.get_setting('databases', 'nodes_db_path'))
@@ -25,6 +25,7 @@ navbar = dbc.NavbarSimple(
                 dbc.DropdownMenuItem("Map Test", href="/map-example"),
                 dbc.DropdownMenuItem("Nodes List Table", href="/nodes-table"),
                 dbc.DropdownMenuItem("Example Maps", href="/example-maps"),
+                dbc.DropdownMenuItem("Example Image", href="/example-image"),
             ],
             nav=True,
             in_navbar=True,
@@ -78,6 +79,8 @@ def display_page(pathname):
         return updater.Updater(mesh).get_layout()
     elif pathname == '/example-maps':
         return example_maps.ExampleMaps().get_layout()
+    elif pathname == '/example-image':
+        return image_example.ImageExample().get_layout()
     else:
         return home.Home().get_layout()
 
