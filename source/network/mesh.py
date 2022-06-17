@@ -6,6 +6,7 @@ from source.util.timekeeper import Timestamps
 from source.util.database import Database
 from source.util.settings import Settings
 import re
+import sys
 
 
 class Mesh:
@@ -130,6 +131,60 @@ class Mesh:
                     print('Error: No data available for node', node['node_id'])
         self.sensor_data_db.insert_multiple(records)
 
+    def receive_pixel_packets(self):
+        # interesting note: The number of packets has no effect on the transfer speed, only the amount of data
+        timeout = self.config.get_int_setting('mesh_network', 'image_timeout')
+        start = self.ts.get_timestamp()
+        packets = list()
+        total_packets = None
+        while True:
+            if self.ts.get_timestamp() - start > timeout:
+                return None
+            try:
+                packet = self.port.readline()
+                packet = packet.decode().replace('*', '')
+                # print(packet)
+                data = json.loads(packet)
+                if 'pixels' in data:
+                    print(len(data['pixels']))
+                    print(packet)
+                    packets.append(data)
+                elif 'total_packets_sent' in data:
+                    total_packets = data['total_packets_sent']
+                    print(data)
+                    print(total_packets)
+                if total_packets is not None:
+                    if len(packets) >= total_packets:
+                        print('All Packets Received')
+                        break
+            except Exception as e:
+                print(e)
+                continue
+        print("Transmission Time:", self.ts.get_timestamp() - start)
+        return packets
+
+    def get_image_data(self, node_id):
+        self.send(node_id, 'image')
+        pixels = list()
+        packet_data = self.receive_pixel_packets()
+        packets = sorted(packet_data, key=lambda d: d['packet_number'])
+        for packet in packets:
+            pixels.extend(packet['pixels'])
+        pixel_data = bytearray(pixels)
+        return pixel_data
+
+    def write_image(self):
+        pixels = self.get_image_data(4144885065)
+        test_obj = dict()
+        test_obj['pixel_data'] = pixels
+        print(test_obj)
+        print("test_obj size: {} bytes".format(sys.getsizeof(test_obj)))
+        with open('test_img7.jpg', 'wb') as file:
+            file.write(bytes(pixels))
+        print('done')
+
+
+
 
 def main():
     command = Mesh()
@@ -138,14 +193,16 @@ def main():
     # print(command.get_topology())
     # print(command.get_sensor_data(4144723677))
     # print(command.get_sensor_data(2222631473))
-    start = 0
-    while True:
-        try:
-            if time.time() - start > 5:
-                start = time.time()
-                print(command.get_sensor_data(4144723677))
-        except KeyboardInterrupt:
-            exit(0)
+    # start = 0
+    # while True:
+    #     try:
+    #         if time.time() - start > 5:
+    #             start = time.time()
+    #             print(command.get_sensor_data(4144723677))
+    #     except KeyboardInterrupt:
+    #         exit(0)
+    # command.get_topology()
+    command.write_image()
 
 
 if __name__ == '__main__':
