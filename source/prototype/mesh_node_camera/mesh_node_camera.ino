@@ -36,7 +36,7 @@ int mode = 0;
 uint8_t start_capture = 0;
 
 //DynamicJsonDocument pixelData(16384);
-StaticJsonDocument<26000> pixelData;
+StaticJsonDocument<25000> pixelData;
 JsonArray pixels = pixelData.createNestedArray("pixels");
 
 void send_pixel_stats(uint32_t from, int packetNumber);
@@ -122,7 +122,7 @@ void setup()
 
 
   mesh.setDebugMsgTypes( ERROR | STARTUP | CONNECTION );  // set before init() so that you can see startup messages
-  mesh.init( MESH_PREFIX, MESH_PASSWORD, MESH_PORT );
+  mesh.init( MESH_PREFIX, MESH_PASSWORD, &userScheduler, MESH_PORT );
   mesh.onReceive(&receivedCallback);
 }
 
@@ -185,7 +185,7 @@ int capture(uint32_t from)
     initialize_pixel_data(0);
     while ( length-- )
     {
-      if (count >= 1250)
+      if (count >= 1000)
       {
         send_pixel_packet(from);
         packetNumber++;
@@ -240,6 +240,7 @@ void send_pixel_packet(uint32_t from)
 {
   String str = "";
   serializeJson(pixelData, str);
+  Serial.println(str);
   mesh.sendSingle(from, str);
 }
 
