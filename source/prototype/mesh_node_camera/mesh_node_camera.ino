@@ -119,6 +119,7 @@ void setup()
   #if !(defined (OV2640_MINI_2MP_PLUS))
     myCAM.write_reg(ARDUCHIP_FRAMES,0x00);
   #endif
+  myCAM.set_bit(ARDUCHIP_GPIO,GPIO_PWDN_MASK);  
 
 
   mesh.setDebugMsgTypes( ERROR | STARTUP | CONNECTION );  // set before init() so that you can see startup messages
@@ -137,6 +138,8 @@ void loop()
 
 int capture(uint32_t from)
 {
+  myCAM.clear_bit(ARDUCHIP_GPIO,GPIO_PWDN_MASK);
+  delay(50);
   myCAM.OV2640_set_Light_Mode(Auto);
   uint8_t temp = 0xff;
   uint8_t temp_last = 0;
@@ -222,6 +225,8 @@ int capture(uint32_t from)
     myCAM.CS_HIGH();
     is_header = false;
     myCAM.clear_fifo_flag();
+    delay(20);
+    myCAM.set_bit(ARDUCHIP_GPIO,GPIO_PWDN_MASK);  
   }
   return 1;
 }
