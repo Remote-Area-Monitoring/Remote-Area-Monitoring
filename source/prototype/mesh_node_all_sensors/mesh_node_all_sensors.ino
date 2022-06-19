@@ -76,6 +76,7 @@ void setup()
 
   mesh.setDebugMsgTypes( ERROR | STARTUP | CONNECTION );  // set before init() so that you can see startup messages
   mesh.init( MESH_PREFIX, MESH_PASSWORD, MESH_PORT );
+  mesh.setContainsRoot(true);
   mesh.onReceive(&receivedCallback);
 }
 
