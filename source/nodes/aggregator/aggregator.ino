@@ -86,6 +86,8 @@ void setup()
   Serial.begin(115200);
 
   mesh.init( MESH_PREFIX, MESH_PASSWORD, &userScheduler, MESH_PORT );
+  mesh.setRoot(true);
+  mesh.setContainsRoot(true);
   mesh.onReceive(&receivedCallback);
   mesh.onNewConnection(&newConnectionCallback);
 
