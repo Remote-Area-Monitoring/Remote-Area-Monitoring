@@ -3,6 +3,5 @@
   <component name="VcsDirectoryMappings">
     <mapping directory="$PROJECT_DIR$" vcs="Git" />
     <mapping directory="$PROJECT_DIR$/Electrical_Design/Resources/Eagle_Resources/Eagle_Libs" vcs="Git" />
-    <mapping directory="$PROJECT_DIR$/Electrical_Design/Resources/Eagle_Resources/rand_eagle_lbr_ds18b20/eagle" vcs="Git" />
   </component>
 </project>
