@@ -125,7 +125,7 @@ class Mesh:
         records = list()
         nodes = self.nodes_db.get_all()
         for node in nodes:
-            if node['status'] == 'active':
+            if node['status'] == 'active' and node['node_config']['sensors'] is True:
                 data = self.get_sensor_data(node['node_id'])
                 if data is not None:
                     print(data)
@@ -160,7 +160,7 @@ class Mesh:
                         # print('failed to load json')
                         continue
                     if 'pixels' in packet_data:
-                        print(len(packet_data['pixels']))
+                        # print(len(packet_data['pixels']))
                         data.append(packet_data)
                     elif 'total_packets_sent' in packet_data:
                         total_packets = packet_data['total_packets_sent']
@@ -206,20 +206,25 @@ class Mesh:
         # TODO: implement interval setting
         # TODO: implement node config
         attempts = self.config.get_int_setting('mesh_network', 'image_retry')
-        for attempt in range(0, attempts):
-            image_data = self.get_image_data(4144885065)
-            # print(image_data)
-            if image_data is not None:
-                if self.image.validate_pixel_data(image_data['pixels']):
-                    self.images_db.insert(image_data)
-                    print('Image Saved to Database')
-                    return None
-                else:
-                    print('Invalid Pixel Data - Attempt', attempt + 1, 'of', attempts)
-                    continue
-            else:
-                print('No Pixel Data - Attempt', attempt + 1, 'of', attempts)
-                continue
+        nodes = self.nodes_db.get_all()
+        for node in nodes:
+            if node['status'] == 'active' and node['node_config']['camera'] is True:
+                for attempt in range(0, attempts):
+                    # image_data = self.get_image_data(4144885065)
+                    print('Getting Image Data for:', node['node_id'], )
+                    image_data = self.get_image_data(node['node_id'])
+                    # print(image_data)
+                    if image_data is not None:
+                        if self.image.validate_pixel_data(image_data['pixels']):
+                            self.images_db.insert(image_data)
+                            print('Image Saved to Database')
+                            break
+                        else:
+                            print('Invalid Pixel Data - Attempt', attempt + 1, 'of', attempts)
+                            continue
+                    else:
+                        print('No Pixel Data - Attempt', attempt + 1, 'of', attempts)
+                        continue
 
 
 
@@ -245,17 +250,60 @@ def main():
     # print(command.get_sensor_data(4144723677))
     # print(command.get_sensor_data(2222631473))
     # start = 0
+    # cam_start = 0
     # while True:
     #     try:
     #         if time.time() - start > 5:
     #             start = time.time()
-    #             print(command.get_sensor_data(4144723677))
+    #             db_nodes_detail = command.nodes_db.get_all()
+    #             db_nodes = list()
+    #             for node in db_nodes_detail:
+    #                 db_nodes.append(node['node_id'])
+    #             network_nodes = command.list_connected_nodes()
+    #             nodes = set(db_nodes).intersection(network_nodes)
+    #             print(command.get_topology())
+    #             for node in nodes:
+    #                 print('Getting Sensor Data for: ', node)
+    #                 print(command.get_sensor_data(node))
+    #             # print(command.get_sensor_data(4144723677)) # OG
+    #             # print(command.get_sensor_data(4144717489)) # lighter
+    #             # print(command.get_sensor_data(4146216805)) # medium
+    #         # if time.time() - cam_start > 120:
+    #         #     image_data = command.get_image_data(4144717489)
+    #         #     if image_data is not None:
+    #         #         if command.image.validate_pixel_data(image_data['pixels']):
+    #         #             command.images_db.insert(image_data)
+    #         #             print('Image Saved to Database')
+    #         #         else:
+    #         #             print(image_data)
+    #         #             print('Invalid Pixel Data')
+    #         #             continue
+    #         #     else:
+    #         #         print('No Pixel Data - Attempt')
+    #         #         continue
     #     except KeyboardInterrupt:
     #         exit(0)
     # command.get_topology()
+    # while True:
+    #     command.update_nodes_image_data()
+    #     sleep(5 * 60)
+
+    # while True:
+    #     command.get_topology()
+    #     sleep(2)
+    sensor_interval = 60
+    cam_interval = 300
+    start = 0
+    cam_start = 0
     while True:
-        command.update_nodes_image_data()
-        sleep(5 * 60)
+        try:
+            print(command.get_topology())
+            if time.time() - start > sensor_interval:
+                command.update_nodes_sensor_data()
+            if time.time() - cam_start > cam_interval:
+                command.update_nodes_image_data()
+        except KeyboardInterrupt:
+            exit(0)
 
 
 if __name__ == '__main__':
