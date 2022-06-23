@@ -8,6 +8,7 @@ from dash import dcc, html
 
 
 class Image:
+    # Note: Avg image size at 352x288 is 56.7kb -> max nodes is 156 -> est. 38.75 Gb max of image data per year
     def __init__(self):
         self.config = Settings('general.config')
         self.db = Database(self.config.get_setting('databases', 'images_database_path'))
