@@ -8,8 +8,10 @@ from flask import request
 from source.util.database import Database
 from source.network.mesh import Mesh
 from source.util.settings import Settings
+from source.util.image import Image
 from source.util.timekeeper import Timestamps
-from source.website.pages import home, map_example, node_table, updater, example_maps, image_example, node_details
+from source.website.pages import home, map_example, node_table, updater, example_maps, image_example, node_details, \
+    node_list
 
 config = Settings('general.config')
 nodes_db = Database(config.get_setting('databases', 'nodes_db_path'))
@@ -20,6 +22,7 @@ mesh = Mesh()
 navbar = dbc.NavbarSimple(
     children=[
         dbc.NavItem(dbc.NavLink("Home Page", href="/home")),
+        dbc.NavItem(dbc.NavLink("Node List", href="/node-list")),
         dbc.DropdownMenu(
             children=[
                 dbc.DropdownMenuItem("Dev Tools", header=True),
@@ -69,6 +72,13 @@ def update_example_map(n_clicks, lat, lon, size, zoom):
     return Map().get_single_point_map_div(lat, lon, size=size, zoom=zoom)
 
 
+@app.callback(Output('node-detail-image-view', 'children'),
+              Input('node-detail-image-drop', 'value'))
+def update_node_detail_image(value):
+    print(value)
+    return Image().get_image_div_with_timestring(value)
+
+
 # Navigate pages
 @app.callback(Output('page-content', 'children'),
               Input('url', 'pathname'))
@@ -84,7 +94,9 @@ def display_page(pathname):
     elif pathname == '/example-image':
         return image_example.ImageExample().get_layout()
     elif 'node_details' in pathname:
-        return node_details.NodeDetails(pathname, mesh, nodes_db, sensors_db).get_layout()
+        return node_details.NodeDetails(pathname).get_layout()
+    elif pathname == '/node-list':
+        return node_list.NodeList().get_layout()
     else:
         return home.Home().get_layout()
 
