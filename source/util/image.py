@@ -72,6 +72,48 @@ class Image:
         # )
         return divs
 
+    def get_image_list(self, node_id):
+        image_list = list()
+        images = self.db.get_data_single_field('node_id', node_id)
+        if len(images) < 1:
+            return None
+        print(len(images))
+        images = sorted(images, key=lambda d: d['timestamp'], reverse=True)
+        for image in images:
+            image_string = str(image['node_id'])
+            image_string += ' -> '
+            image_string += self.ts.get_long_timestring(image['timestamp'])
+            image_list.append(image_string)
+        return image_list
+
+    def get_image_div_with_timestring(self, timestring: str):
+        try:
+            timestring = timestring.split(' -> ')
+            node_id = int(timestring[0])
+            timestamp = self.ts.timestamp_from_long_timestring(timestring[1])
+            dataobj = {
+                'node_id': node_id,
+                'timestamp': timestamp
+            }
+            image = self.db.get_data_from_obj(dataobj=dataobj)
+            if image is None or len(image) < 1:
+                return html.Div([])
+            pixels = image[0]['pixels']
+            jpg = bytearray(pixels)
+            buf = io.BytesIO(jpg)
+            img = pil.open(buf)
+            fig = px.imshow(img)
+            div = html.Div([
+                dcc.Graph(figure=fig)
+                ],
+                style={'display': 'flex', 'justifyContent': 'center'}
+            )
+        except Exception as e:
+            print(e)
+            return None
+        return div
+
+
 def main():
     img = Image()
     # img.test_image()
