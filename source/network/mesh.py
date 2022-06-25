@@ -18,6 +18,7 @@ class Mesh:
         self.sun = Sunlight()
         self.image = Image()
         self.config = Settings('general.config')
+        self.nodes_config = Settings('nodes.config')
         self.nodes_db = Database(self.config.get_setting('databases', 'nodes_db_path'))
         self.sensor_data_db = Database(self.config.get_setting('databases', 'sensor_data_db_path'))
         self.images_db = Database(self.config.get_setting('databases', 'images_database_path'))
@@ -51,7 +52,7 @@ class Mesh:
             data = self.receive_json()
         if 'nodeId' not in data:
             return None
-        print(data)
+        # print(data)
         return data
 
     def list_connected_nodes(self):
@@ -206,9 +207,11 @@ class Mesh:
         return image_data
 
     def update_nodes_image_data(self):
-        if not self.sun.is_daytime():
-            print('Nighttime - Image Capture Suspended')
-            return None
+        # TODO: images can be saturated with green after overnight - need to create an init func for cam on arduino side
+        # TODO: implement astral in place of suntime - sunset bug
+        # if not self.sun.is_daytime():
+        #     print('Nighttime - Image Capture Suspended')
+        #     return None
         attempts = self.config.get_int_setting('mesh_network', 'image_retry')
         retry_delay = self.config.get_int_setting('mesh_network', 'image_retry_delay')
         nodes = self.nodes_db.get_all()
@@ -233,7 +236,9 @@ class Mesh:
                         sleep(retry_delay)
                         continue
 
-
+    def update_connected_nodes(self):
+        self.nodes_config.set_setting('connected_nodes', 'node_ids', str(self.list_connected_nodes()))
+        self.nodes_config.set_setting('connected_nodes', 'last_updated', str(self.ts.get_timestamp()))
 
 
     def write_image(self):
@@ -300,10 +305,15 @@ def main():
     #     sleep(2)
     sensor_interval = 300
     cam_interval = 300
+    connected_interval = 30
     sensor_start = 0
     cam_start = 0
+    connected_start = 0
     while True:
         try:
+            if time.time() - connected_start > connected_interval:
+                command.update_connected_nodes()
+                connected_start = time.time()
             if time.time() - sensor_start > sensor_interval:
                 print(command.get_topology())
                 command.update_nodes_sensor_data()
