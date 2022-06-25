@@ -38,16 +38,24 @@ class Map:
         )
         return div
 
-    def get_single_point_map_div(self, latitude: float, longitude: float, size: float = 5.0, zoom=15):
+    def get_single_point_map_div(self, latitude: float, longitude: float, size: float = 5.0, zoom=15,
+                                 style='open-street-map'):
         point = [{'lat': latitude, 'lon': longitude, 'point_size': size}]
         fig = px.scatter_mapbox(point, lat="lat", lon="lon", color_discrete_sequence=["blue"], zoom=zoom,
                                 size='point_size', size_max=15.0)
-        fig.update_layout(mapbox_style="open-street-map")
+        fig.update_layout(mapbox_style=style)
         fig.update_layout(margin={"r": 0, "t": 0, "l": 0, "b": 0})
         div = html.Div([
             dcc.Graph(figure=fig)
         ])
         return div
+
+    def get_node_point(self, node_id):
+        data = self.nodes_db.get_data_single_field('node_id', node_id)
+        if len(data) > 0:
+            node = data[0]
+            return self.get_single_point_map_div(node['lat'], node['lon'], zoom=15, style='stamen-terrain')
+        return html.Div([])
 
     def test_multi_point_map(self):
         df = self.__get_node_location_dataframe()
