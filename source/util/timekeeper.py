@@ -109,3 +109,9 @@ class Timestamps:
 
     def get_excel_timestring(self, timestamp):
         return datetime.fromtimestamp(timestamp).strftime('%Y/%m/%d %H:%M:%S')
+
+    def get_long_timestring(self, timestamp):
+        return datetime.fromtimestamp(timestamp).strftime('%a, %Y-%m-%d--%H:%M:%S.%f')
+
+    def timestamp_from_long_timestring(self, timestring):
+        return datetime.strptime(timestring, '%a, %Y-%m-%d--%H:%M:%S.%f').timestamp()
