@@ -9,11 +9,13 @@ from source.util.image import Image
 import re
 import sys
 from time import sleep
+from source.util.sun import Sunlight
 
 
 class Mesh:
     def __init__(self):
         self.ts = Timestamps()
+        self.sun = Sunlight()
         self.image = Image()
         self.config = Settings('general.config')
         self.nodes_db = Database(self.config.get_setting('databases', 'nodes_db_path'))
@@ -204,8 +206,9 @@ class Mesh:
         return image_data
 
     def update_nodes_image_data(self):
-        # TODO: implement interval setting
-        # TODO: implement node config
+        if not self.sun.is_daytime():
+            print('Nighttime - Image Capture Suspended')
+            return None
         attempts = self.config.get_int_setting('mesh_network', 'image_retry')
         retry_delay = self.config.get_int_setting('mesh_network', 'image_retry_delay')
         nodes = self.nodes_db.get_all()
@@ -295,17 +298,20 @@ def main():
     # while True:
     #     command.get_topology()
     #     sleep(2)
-    sensor_interval = 60
+    sensor_interval = 300
     cam_interval = 300
-    start = 0
+    sensor_start = 0
     cam_start = 0
     while True:
         try:
-            print(command.get_topology())
-            if time.time() - start > sensor_interval:
+            if time.time() - sensor_start > sensor_interval:
+                print(command.get_topology())
                 command.update_nodes_sensor_data()
+                sensor_start = time.time()
             if time.time() - cam_start > cam_interval:
+                print(command.get_topology())
                 command.update_nodes_image_data()
+                cam_start = time.time()
         except KeyboardInterrupt:
             exit(0)
 
