@@ -85,7 +85,8 @@ float calculatedSpeed()
   interrupts();
   delay(1000);
   noInterrupts();
-  float windSpeed = pulses * 3.1415 *2 * (4.9/(5280*12));
+//  float windSpeed = pulses * 3.1415 *2 * (4.9/(5280*12));
+  float windSpeed = 440000 / pulses;
   Serial.print("Calculated Speed: ");
   Serial.println(windSpeed);
   Serial.print("Calc Pulses: ");
