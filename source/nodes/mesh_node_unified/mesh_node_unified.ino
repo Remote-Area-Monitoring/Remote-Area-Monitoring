@@ -62,10 +62,7 @@ void getSoilMoisture();
 void getWindSpeed();
 void getWindDirection();
 void getCompassData();
-void getDallasTemperature();
 float getCalibratrionTemperature();
-float getTemperatureOffset();
-void getBMEActual();
 
 void send_pixel_stats(uint32_t from, int packetNumber);
 int capture();
@@ -192,8 +189,6 @@ String allSensorDataString()
   getWindSpeed();
   getWindDirection();
   getCompassData();
-  getDallasTemperature();
-  getBMEActual();
 
   String str = "";
   serializeJson(data, str);
@@ -218,7 +213,6 @@ void getAtmosphericData()
   getTemperatureOffset();
   bme.setTemperatureCompensation(data["offset_temperature"]);
   data["bme_offset_temperature"] = bme.getTemperatureCompensation();
-  data["air_temperature_C"] = bme.readTemperature();
   data["humidity"] = bme.readHumidity();
   data["air_pressure_Pa"] = bme.readPressure();
 }
@@ -288,29 +282,23 @@ float getCalibrationTemperature()
   float temp = ds18.getTempCByIndex(0);
   if (temp == DEVICE_DISCONNECTED_C)
   {
+    data["calibration_temperature"] = false;
     return bme.readTemperature();
   }
   else
   {
+    data["calibration_temperature"] = temp;
     return temp;
   }
 }
 
 float getTemperatureOffset()
 {
-  float offset = getCalibrationTemperature() - bme.readTemperature();
+  float bme_temp = bme.readTemperature();
+  data["air_temperature_C"] = bme_temp;
+  float offset = getCalibrationTemperature() - bme_temp;
   data["offset_temperature"] = offset;
   return offset;
-}
-
-void getDallasTemperature()
-{
-  data["calibration_temperature"] = getCalibrationTemperature();
-}
-
-void getBMEActual()
-{
-  data["bme_actual_temperature"] = bme.readTemperature();
 }
 
 
@@ -335,6 +323,7 @@ int capture(uint32_t from)
   myCAM.flush_fifo();
   myCAM.clear_fifo_flag();
   //Start capture
+  myCAM.OV2640_set_Light_Mode(Auto);
   Serial.println("Capture Start");
   myCAM.start_capture();
   delay(500);
