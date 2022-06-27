@@ -1,3 +1,5 @@
+import json
+
 from source.util.analysis import Analysis
 from source.network.mesh import Mesh
 from source.util.database import Database
@@ -52,12 +54,23 @@ class NodeDetails:
 
     def __get_rows(self):
         rows = list()
+        break_row = dbc.Row([dbc.Col([html.Br()], width='auto')], justify='center')
+
         row_1 = dbc.Row([dbc.Col([html.H2('Environmental Data')], width='auto')], justify='center')
         rows.append(row_1)
         row_2 = dbc.Row([dbc.Col([html.P('Date Last Updated: ' + self.analysis.get_last_update_string())],
                                  width='auto')],
                         justify='center')
         rows.append(row_2)
+
+        rows.append(break_row)
+
+        current_data_title = dbc.Row([
+            dbc.Col([
+                html.H4('Current Environmental Data')
+            ], width='auto')
+        ], justify='center')
+        rows.append(current_data_title)
 
         temperature_data = next(record for record in self.analyzed_data if record['name'] == 'air_temperature_C')
         temperature_data['current_value'] = self.convert.temperature(temperature_data['current_value'])
@@ -224,9 +237,49 @@ class NodeDetails:
 
         rows.append(row_4)
 
+        graphs = self.analysis.get_node_graphs_list()
+        options = list()
+        for graph in graphs:
+            option = str(self.node_id) + ' -> ' + graph
+            # option = {
+            #     'label': graph,
+            #     'value': str(self.node_id) + '-' + graph
+            #     # 'value': json.dumps({'node_id': self.node_id, 'graph': graph}).encode('utf-8')
+            # }
+            options.append(option)
+
+        graph_title_row = dbc.Row([
+            dbc.Col([
+                html.H4('Environmental Graphs')
+            ], width='auto')
+        ], justify='center')
+        rows.append(graph_title_row)
+
+        graph_drop = dbc.Row([
+            dbc.Col([
+                dcc.Dropdown(
+                    options,
+                    value=options[0],
+                    searchable=True,
+                    clearable=False,
+                    id='node-detail-graph-drop'
+                )
+            ], width='4')
+        ], justify='center')
+        rows.append(graph_drop)
+
+        graph_div_row = dbc.Row([
+            dbc.Col([
+                html.Div(id='node-detail-graph-view')
+            ], width='6')
+        ], justify='center')
+        rows.append(graph_div_row)
+
+        rows.append(break_row)
+
         location_title_row = dbc.Row([
             dbc.Col([
-                html.H3('Location')
+                html.H3('Node Location')
             ], width='auto')
         ], justify='center')
         rows.append(location_title_row)
@@ -261,7 +314,13 @@ class NodeDetails:
                 options = ['No Images Available']
             image_selection_row = dbc.Row([
                 dbc.Col([
-                    dcc.Dropdown(options, value=options[0], searchable=True, clearable=False, id='node-detail-image-drop')
+                    dcc.Dropdown(
+                        options,
+                        value=options[0],
+                        searchable=True,
+                        clearable=False,
+                        id='node-detail-image-drop'
+                    )
                 ], width='4')
             ], justify='center')
             rows.append(image_selection_row)
@@ -339,9 +398,10 @@ class NodeDetails:
         if current < current_min:
             current_min = current
 
-        power_data = next(record for record in self.analyzed_data if record['name'] == 'power_mW')
-        power = round(power_data['current_value'] / 1000, 3)
-        power_color = {"gradient": True, "ranges": {"green": [0, 2], "yellow": [2, 2.8], "red": [2.8, 3]}}
+        # power_data = next(record for record in self.analyzed_data if record['name'] == 'power_mW')
+        power = voltage * abs(current)
+        power = round(power / 1000, 3)
+        power_color = {"gradient": True, "ranges": {"green": [0, 2.2], "yellow": [2.2, 2.8], "red": [2.8, 3]}}
 
         power_status_row = dbc.Row([
             dbc.Col([
@@ -379,10 +439,6 @@ class NodeDetails:
             ], width='auto')
         ], justify='center')
         rows.append(power_status_row)
-
-        # TODO: Add tank for battery
-        # TODO: Add gauge for current -600 to +600 - change color based on charge / discharge
-        # TODO: Add gauge for power
 
         rows.append(spacer_row)
         return rows
