@@ -188,7 +188,11 @@ class Mesh:
 
     def get_image_data(self, node_id):
         self.send(node_id, 'image')
-        packet_data, packet_info = self.receive_pixel_packets()
+        try:
+            packet_data, packet_info = self.receive_pixel_packets()
+        except TypeError:
+            packet_data = None
+            packet_info = None
         if packet_data is None:
             return None
         pixels = list()
