@@ -33,3 +33,12 @@ class Convert:
         value /= 2.237
         return round(value, 2)
 
+    def humidity(self, value):
+        humidity = value + 10
+        if humidity > 100:
+            humidity = 100
+        return round(humidity, 2)
+
+    def power(self, value):
+        return round(value / 1000, 2)
+
