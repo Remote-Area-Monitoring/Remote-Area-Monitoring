@@ -115,3 +115,6 @@ class Timestamps:
 
     def timestamp_from_long_timestring(self, timestring):
         return datetime.strptime(timestring, '%a, %Y-%m-%d--%H:%M:%S.%f').timestamp()
+
+    def get_24h_timestamp(self):
+        return datetime.now().timestamp() - (24 * 3600)
