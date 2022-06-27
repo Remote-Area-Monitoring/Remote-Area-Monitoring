@@ -30,3 +30,8 @@ class Analysis:
         last_updated = max(seq)
         last_updated = self.ts.get_time_date_string(last_updated)
         return last_updated
+
+    def get_node_graphs_list(self):
+        graphs = ['Temperature', 'Humidity', 'Pressure', 'CO2', 'TVOC', 'Soil Moisture', 'Wind Speed', 'Wind Direction',
+                  'Battery Voltage', 'Battery Current', 'Bus Power']
+        return graphs
