@@ -9,6 +9,7 @@ from source.util.database import Database
 from source.network.mesh import Mesh
 from source.util.settings import Settings
 from source.util.image import Image
+from source.website.graph import Graph
 from source.util.timekeeper import Timestamps
 from source.website.pages import home, map_example, node_table, updater, example_maps, image_example, node_details, \
     node_list
@@ -77,6 +78,12 @@ def update_example_map(n_clicks, lat, lon, size, zoom):
 def update_node_detail_image(value):
     print(value)
     return Image().get_image_div_with_timestring(value)
+
+@app.callback(Output('node-detail-graph-view', 'children'),
+              Input('node-detail-graph-drop', 'value'))
+def update_node_detail_image(value):
+    print(value)
+    return Graph().get_single_select_graph(value)
 
 
 # Navigate pages
