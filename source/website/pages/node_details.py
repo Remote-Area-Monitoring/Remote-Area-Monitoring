@@ -56,7 +56,8 @@ class NodeDetails:
         rows = list()
         break_row = dbc.Row([dbc.Col([html.Br()], width='auto')], justify='center')
 
-        row_1 = dbc.Row([dbc.Col([html.H2('Environmental Data')], width='auto')], justify='center')
+        row_1 = dbc.Row([dbc.Col([html.H2('Environmental Data for ' + str(self.node_id))], width='auto')],
+                        justify='center')
         rows.append(row_1)
         row_2 = dbc.Row([dbc.Col([html.P('Date Last Updated: ' + self.analysis.get_last_update_string())],
                                  width='auto')],
@@ -129,7 +130,7 @@ class NodeDetails:
                         color='#0d6dfd',
                         label='Humidity',
                         units='%',
-                        value=humidity_data['current_value'],
+                        value=self.convert.humidity(humidity_data['current_value']),
                         max=100,
                         min=0,
                     )
@@ -139,7 +140,8 @@ class NodeDetails:
                 html.Div([
                     daq.Gauge(
                         showCurrentValue=True,
-                        color={"gradient": True, "ranges": {"red": [0, 60], "yellow": [60, 80], "green": [80, 100]}},
+                        color={'default': '#0d6dfd', "gradient": True, "ranges": {"red": [0, 20], "yellow": [20, 50],
+                                                                                  "green": [50, 100]}},
                         label='Soil Moisture Saturation',
                         units='%',
                         value=soil_sat,
@@ -271,7 +273,7 @@ class NodeDetails:
         graph_div_row = dbc.Row([
             dbc.Col([
                 html.Div(id='node-detail-graph-view')
-            ], width='6')
+            ], width='10', xl='10')
         ], justify='center')
         rows.append(graph_div_row)
 
@@ -298,7 +300,7 @@ class NodeDetails:
             dbc.Col([
                 self.map.get_single_point_map_div(latitude=self.node_config['lat'], longitude=self.node_config['lon'],
                                                   zoom=15, style='stamen-terrain')
-            ], width='auto'),
+            ], width='8', xl='6'),
         ], justify='center')
         rows.append(map_row)
 
