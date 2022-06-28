@@ -231,7 +231,8 @@ class Graph:
         fig.update_layout(
             title=title,
             xaxis_title=x_label,
-            yaxis_title=y_label
+            yaxis_title=y_label,
+            margin=dict(l=0, r=0)
         )
         fig.update_layout(
             xaxis=dict(
@@ -274,7 +275,7 @@ class Graph:
                 type="date"
             )
         )
-        return html.Div([dcc.Graph(figure=fig, style={'width': '100vh', 'height': '60vh'})])
+        return html.Div([dcc.Graph(figure=fig, style={'height': '60vh'})])
 
     # def get_min_max_avg(self, node_id=None):
     #     for record in records:
