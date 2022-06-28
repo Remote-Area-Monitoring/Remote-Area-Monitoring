@@ -12,7 +12,7 @@ from source.util.image import Image
 from source.website.graph import Graph
 from source.util.timekeeper import Timestamps
 from source.website.pages import home, map_example, node_table, updater, example_maps, image_example, node_details, \
-    node_list
+    node_list, dashboard
 
 config = Settings('general.config')
 nodes_db = Database(config.get_setting('databases', 'nodes_db_path'))
@@ -24,6 +24,7 @@ navbar = dbc.NavbarSimple(
     children=[
         dbc.NavItem(dbc.NavLink("Home Page", href="/home")),
         dbc.NavItem(dbc.NavLink("Node List", href="/node-list")),
+        dbc.NavItem(dbc.NavLink("Dashboard", href="/dashboard")),
         dbc.DropdownMenu(
             children=[
                 dbc.DropdownMenuItem("Dev Tools", header=True),
@@ -104,6 +105,8 @@ def display_page(pathname):
         return node_details.NodeDetails(pathname).get_layout()
     elif pathname == '/node-list':
         return node_list.NodeList().get_layout()
+    elif pathname == '/dashboard':
+        return dashboard.Dashboard().get_layout()
     else:
         return home.Home().get_layout()
 
