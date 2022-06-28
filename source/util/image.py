@@ -106,7 +106,7 @@ class Image:
             div = html.Div([
                 dcc.Graph(figure=fig)
                 ],
-                style={'display': 'flex', 'justifyContent': 'center'}
+                style={'display': 'flex', 'justifyContent': 'center', 'height': '50vh', 'width': '50vh'}
             )
         except Exception as e:
             print(e)
