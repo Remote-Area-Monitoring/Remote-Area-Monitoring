@@ -322,10 +322,10 @@ def main():
                 print(command.get_topology())
                 command.update_nodes_sensor_data()
                 sensor_start = time.time()
-            if time.time() - cam_start > cam_interval:
-                print(command.get_topology())
-                command.update_nodes_image_data()
-                cam_start = time.time()
+            # if time.time() - cam_start > cam_interval:
+            #     print(command.get_topology())
+            #     command.update_nodes_image_data()
+            #     cam_start = time.time()
         except KeyboardInterrupt:
             exit(0)
 
