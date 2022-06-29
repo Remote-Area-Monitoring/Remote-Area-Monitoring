@@ -27,6 +27,100 @@ class Dashboard:
         break_row = dbc.Row([dbc.Col([html.Br()], width='auto')], justify='center')
         rows.append(break_row)
 
+        environment_title = dbc.Row([dbc.Col([html.H1('Environmental Data')], width='auto')], justify='center')
+        rows.append(environment_title)
+
+        data = self.sensors_db.get_records(self.ts.get_24h_timestamp())
+        if data is None or len(data) < 1:
+            data = self.sensors_db.get_all()
+        analysis = Analysis(data)
+        last_updated_row = dbc.Row([dbc.Col([html.P('Date Last Updated: ' + analysis.get_last_update_string())],
+                                 width='auto')],
+                        justify='center')
+        rows.append(last_updated_row)
+
+        rows.append(break_row)
+
+        overview_title = dbc.Row([dbc.Col([html.H3('Environment Overview')], width='auto')], justify='center')
+        rows.append(overview_title)
+        rows.append(break_row)
+
+        timeframe_select_row = dbc.Row([
+            dbc.Col([
+                html.Div([
+                    dbc.RadioItems(
+                        id="dash-gauge-timeframe",
+                        className="btn-group",
+                        inputClassName="btn-check",
+                        labelClassName="btn btn-outline-primary",
+                        labelCheckedClassName="active",
+                        options=[
+                            {"label": "Average", "value": 'Current'},
+                            {"label": "Minimums", "value": 'Minimums'},
+                            {"label": "Maximums", "value": 'Maximums'},
+                        ],
+                        value='Current',
+                    )
+                ], className="radio-group"),
+            ], width='auto')
+        ], justify='center')
+        rows.append(timeframe_select_row)
+
+        rows.append(break_row)
+
+        timestamp_select_row = dbc.Row([
+            dbc.Col([
+                html.Div([
+                    dbc.RadioItems(
+                        id="dash-gauge-timestamp",
+                        className="btn-group",
+                        inputClassName="btn-check",
+                        labelClassName="btn btn-outline-primary",
+                        labelCheckedClassName="active",
+                        options=[
+                            {"label": "Hour", "value": self.ts.get_1h_timestamp()},
+                            {"label": "Day", "value": self.ts.get_24h_timestamp()},
+                            {"label": "Week", "value": self.ts.get_1week_timestamp()},
+                        ],
+                        value=self.ts.get_1h_timestamp(),
+                    )
+                ], className="radio-group"),
+            ], width='auto')
+        ], justify='center')
+        rows.append(timestamp_select_row)
+
+        row_one_gauges = dbc.Row(id='dash-row-one-gauges', justify='center')
+        rows.append(row_one_gauges)
+        row_two_gauges = dbc.Row(id='dash-row-two-gauges', justify='center')
+        rows.append(row_two_gauges)
+
+        rows.append(break_row)
+
+        environment_graph_title = dbc.Row([dbc.Col([html.H2('Environmental Graphs')], width='auto')], justify='center')
+        rows.append(environment_graph_title)
+
+        graph_options = ['Temperature', 'Humidity', 'Pressure', 'CO2', 'TVOC', 'Soil Moisture', 'Wind Speed',
+                         'Wind Direction']
+        graph_drop = dbc.Row([
+            dbc.Col([
+                dcc.Dropdown(
+                    graph_options,
+                    value=graph_options[0],
+                    searchable=False,
+                    clearable=False,
+                    id='dash-graph-drop'
+                )
+            ], width='4')
+        ], justify='center')
+        rows.append(graph_drop)
+
+        graph_div_row = dbc.Row([
+            dbc.Col([
+                html.Div(id='dash-graph-view')
+            ], width='10', xl='10')
+        ], justify='center')
+        rows.append(graph_div_row)
+
         return rows
 
     def get_layout(self):
