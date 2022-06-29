@@ -349,12 +349,12 @@ class NodeDetails:
         if sensor_data_last_update['max_value'] > connection_last_updated:
             connection_last_updated = sensor_data_last_update['max_value']
         last_updated_string = self.ts.get_long_timestring(connection_last_updated)
-        if self.node_id in connected_nodes:
-            connection_status = 'Connected'
-            connection_color = 'green'
-        else:
-            connection_status = 'Disconnected'
-            connection_color = 'red'
+        connection_status = 'Disconnected'
+        connection_color = 'red'
+        if connected_nodes is not None and len(connected_nodes) > 1:
+            if self.node_id in connected_nodes:
+                connection_status = 'Connected'
+                connection_color = 'green'
 
         last_updated_row = dbc.Row([dbc.Col([html.P('Date Last Updated: ' + last_updated_string)],
                                  width='auto')],
