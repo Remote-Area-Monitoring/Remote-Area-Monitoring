@@ -50,7 +50,21 @@ class Mesh:
             return data
         elif 'nodeId' not in data:
             data = self.receive_json()
+        if data is None:
+            return data
         if 'nodeId' not in data:
+            return None
+        # print(data)
+        return data
+
+    def get_connection_strength(self):
+        self.port.write('{"node_id":2, "message":"None"}'.encode())
+        data = self.receive_json()
+        if data is None:
+            return data
+        elif 'node_id' not in data:
+            data = self.receive_json()
+        if 'node_id' not in data:
             return None
         # print(data)
         return data
@@ -243,6 +257,13 @@ class Mesh:
     def update_connected_nodes(self):
         self.nodes_config.set_setting('connected_nodes', 'node_ids', str(self.list_connected_nodes()))
         self.nodes_config.set_setting('connected_nodes', 'last_updated', str(self.ts.get_timestamp()))
+        self.nodes_config.set_setting('connected_nodes', 'topology', json.dumps(self.get_topology()))
+        signal_strength = self.get_connection_strength()
+        if signal_strength is not None:
+            signal_strength = signal_strength['connection_strength']
+        else:
+            signal_strength = 0
+        self.nodes_config.set_setting('connected_nodes', 'root_signal_strength', str(signal_strength))
 
 
     def write_image(self):
