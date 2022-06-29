@@ -11,6 +11,7 @@ from source.util.settings import Settings
 from source.util.image import Image
 from source.website.graph import Graph
 from source.util.timekeeper import Timestamps
+from source.website.gauges import Gauges
 from source.website.pages import home, map_example, node_table, updater, example_maps, image_example, node_details, \
     node_list, dashboard
 
@@ -80,11 +81,26 @@ def update_node_detail_image(value):
     print(value)
     return Image().get_image_div_with_timestring(value)
 
+
 @app.callback(Output('node-detail-graph-view', 'children'),
               Input('node-detail-graph-drop', 'value'))
 def update_node_detail_image(value):
     print(value)
     return Graph().get_single_select_graph(value)
+
+
+@app.callback([Output('dash-row-one-gauges', 'children'),
+               Output('dash-row-two-gauges', 'children')],
+              [Input('dash-gauge-timeframe', 'value'),
+               Input('dash-gauge-timestamp', 'value')])
+def update_dashboard_gauges(timeframe, timestamp):
+    return Gauges().get_dashboard_gauges(timeframe, timestamp)
+
+
+@app.callback(Output('dash-graph-view', 'children'),
+              Input('dash-graph-drop', 'value'))
+def update_dashboard_graph(value):
+    return Graph().get_all_select_graph(value)
 
 
 # Navigate pages
