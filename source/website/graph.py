@@ -1,3 +1,5 @@
+import json
+
 from source.util.settings import Settings
 from source.util.database import Database
 from source.util.timekeeper import Timestamps
@@ -14,6 +16,7 @@ class Graph:
         self.ts = Timestamps()
         self.convert = Convert()
         self.config = Settings('general.config')
+        self.nodes_config = Settings('nodes.config')
         self.nodes_db = Database(self.config.get_setting('databases', 'nodes_db_path'))
         self.sensors_db = Database(self.config.get_setting('databases', 'sensor_data_db_path'))
         self.sensor_data = None
@@ -339,10 +342,10 @@ class Graph:
         }
         return dataobj
 
-    def get_all_select_graph(self, graph_type: str):
-        graph_type = graph_type.lower()
+    def get_all_select_graph(self, graph_info: str):
+        graph_info = graph_info.lower()
         x_label = 'Datetime'
-        if graph_type == 'temperature':
+        if graph_info == 'temperature':
             data = self.get_min_max_avg('calibration_temperature', 'air_temperature_C')
             title = 'Temperature Over Time'
             if self.config.get_setting('units', 'unit') == 'imperial':
@@ -361,15 +364,94 @@ class Graph:
                 data['averages'] = averages_converted
             else:
                 y_label = 'Temperature (C)'
+        elif graph_info == 'humidity':
+            title = 'Humidity Over Time'
+            y_label = 'Humidity (%)'
+            data = self.get_min_max_avg('humidity')
+            minimums_converted = list()
+            maximums_converted = list()
+            averages_converted = list()
+            for value in data['minimums']:
+                minimums_converted.append(self.convert.humidity(value))
+            for value in data['maximums']:
+                maximums_converted.append(self.convert.humidity(value))
+            for value in data['averages']:
+                averages_converted.append(self.convert.humidity(value))
+            data['minimums'] = minimums_converted
+            data['maximums'] = maximums_converted
+            data['averages'] = averages_converted
+        elif graph_info == 'pressure':
+            title = 'Atmospheric Pressure Over Time'
+            y_label = 'Pressure (mbar)'
+            data = self.get_min_max_avg('air_pressure_Pa')
+            minimums_converted = list()
+            maximums_converted = list()
+            averages_converted = list()
+            for value in data['minimums']:
+                minimums_converted.append(self.convert.pressure_mbar(value))
+            for value in data['maximums']:
+                maximums_converted.append(self.convert.pressure_mbar(value))
+            for value in data['averages']:
+                averages_converted.append(self.convert.pressure_mbar(value))
+            data['minimums'] = minimums_converted
+            data['maximums'] = maximums_converted
+            data['averages'] = averages_converted
+        elif graph_info == 'co2':
+            title = 'Carbon Dioxide (CO2) Over Time'
+            y_label = 'CO2 (PPM)'
+            data = self.get_min_max_avg('co2_ppm')
+        elif graph_info == 'tvoc':
+            title = 'Total Volatile Organic Carbons (TVOC) Over Time'
+            y_label = 'TVOC (PPB)'
+            data = self.get_min_max_avg('tvoc_ppb')
+        elif 'soil' in graph_info:
+            title = 'Soil Moisture Content Over Time'
+            y_label = 'Moisture Content (%)'
+            data = self.get_min_max_avg('soil_moisture_adc')
+            minimums_converted = list()
+            maximums_converted = list()
+            averages_converted = list()
+            for value in data['minimums']:
+                minimums_converted.append(self.convert.soil_moisture(value))
+            for value in data['maximums']:
+                maximums_converted.append(self.convert.soil_moisture(value))
+            for value in data['averages']:
+                averages_converted.append(self.convert.soil_moisture(value))
+            data['minimums'] = minimums_converted
+            data['maximums'] = maximums_converted
+            data['averages'] = averages_converted
+        elif 'speed' in graph_info:
+            title = 'Wind Speed Over Time'
+            unit = '(m/s)'
+            if self.config.get_setting('units', 'unit') == 'imperial':
+                unit = '(mph)'
+            y_label = 'Wind Speed ' + unit
+            data = self.get_min_max_avg('wind_speed_mph')
+            minimums_converted = list()
+            maximums_converted = list()
+            averages_converted = list()
+            for value in data['minimums']:
+                minimums_converted.append(self.convert.wind_speed(value))
+            for value in data['maximums']:
+                maximums_converted.append(self.convert.wind_speed(value))
+            for value in data['averages']:
+                averages_converted.append(self.convert.wind_speed(value))
+            data['minimums'] = minimums_converted
+            data['maximums'] = maximums_converted
+            data['averages'] = averages_converted
+        elif 'direction' in graph_info:
+            title = 'Wind Direction Over Time'
+            y_label = 'Wind Direction (Degrees)'
+            data = self.get_min_max_avg('wind_direction')
         else:
-            return html.Div([])
+            return html.Div([html.P('No Data Available')])
         fig = go.Figure()
-        fig.add_trace(go.Scatter(x=data['datetime_objs'], y=data['minimums'], name='Minimum',
-                                 line={'width': 3, 'color': '#00cc96'}, mode='lines+markers',))
-        fig.add_trace(go.Scatter(x=data['datetime_objs'], y=data['averages'], name='Average',
-                                 line={'width': 3, 'color': '#636dfa'}, mode='lines+markers',))
         fig.add_trace(go.Scatter(x=data['datetime_objs'], y=data['maximums'], name='Maximum',
-                                 line={'width': 3, 'color': '#cc553b'},  mode='lines+markers',))
+                                 line={'width': 3, 'color': '#cc553b'}, ))
+        fig.add_trace(go.Scatter(x=data['datetime_objs'], y=data['averages'], name='Average',
+                                 line={'width': 3, 'color': '#636dfa'},))
+        fig.add_trace(go.Scatter(x=data['datetime_objs'], y=data['minimums'], name='Minimum',
+                                 line={'width': 3, 'color': '#00cc96'}, ))
         fig.update_layout(
             title=title,
             xaxis_title=x_label,
@@ -417,7 +499,7 @@ class Graph:
                 type="date"
             )
         )
-        fig.show()
+        # fig.show()
         return html.Div([dcc.Graph(figure=fig, style={'height': '60vh'})])
 
 
@@ -428,7 +510,7 @@ def main():
     graph = Graph()
     # graph.get_single_select_graph('4144723677 -> Temperature')
     # graph.get_min_max_avg('calibration_temperature', 'air_temperature_C')
-    graph.get_all_select_graph('temperature')
+    # graph.network_map()
 
 
 if __name__ == '__main__':
