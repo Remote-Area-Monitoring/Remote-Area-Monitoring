@@ -118,3 +118,9 @@ class Timestamps:
 
     def get_24h_timestamp(self):
         return datetime.now().timestamp() - (24 * 3600)
+
+    def get_1h_timestamp(self):
+        return datetime.now().timestamp() - 3600
+
+    def get_1week_timestamp(self):
+        return datetime.now().timestamp() - ((24 * 3600) * 7)
