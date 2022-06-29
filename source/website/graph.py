@@ -1,5 +1,3 @@
-import json
-
 from source.util.settings import Settings
 from source.util.database import Database
 from source.util.timekeeper import Timestamps
@@ -8,6 +6,7 @@ from dash import Dash, dcc, html
 import pandas as pd
 import plotly.express as px
 import plotly.graph_objects as go
+from statistics import mean
 
 
 class Graph:
@@ -17,10 +16,14 @@ class Graph:
         self.config = Settings('general.config')
         self.nodes_db = Database(self.config.get_setting('databases', 'nodes_db_path'))
         self.sensors_db = Database(self.config.get_setting('databases', 'sensor_data_db_path'))
+        self.sensor_data = None
 
     def __get_sensor_data_by_node(self, node_id, timestamp=None):
         data = self.sensors_db.get_data_single_field('node_id', node_id, timestamp=timestamp)
         return data
+
+    def __get_all_sensor_data(self):
+        return self.sensors_db.get_all()
 
     def __convert_timestamp_to_datetime(self, data):
         for record in data:
@@ -277,14 +280,155 @@ class Graph:
         )
         return html.Div([dcc.Graph(figure=fig, style={'height': '60vh'})])
 
-    # def get_min_max_avg(self, node_id=None):
-    #     for record in records:
-    #         if timestamp < record['timestamp'] < timestamp + 3600:
+
+    def get_min_max_avg(self, key, except_key=None):
+        data = self.sensors_db.get_all()
+        sorted(data, key=lambda d: d['timestamp'])
+        if data is None or len(data) < 1:
+            return None
+        data_by_hour = list()
+        timestamp = data[0]['timestamp']
+        hourly_data = list()
+        datetime_objs = list()
+        minimums = list()
+        maximums = list()
+        averages = list()
+        for record in data:
+            if timestamp <= record['timestamp'] < timestamp + 3600:
+                hourly_data.append(record)
+            else:
+                try:
+                    seq = [x[key] for x in hourly_data]
+                except KeyError:
+                    # print('Key Error: graph.py -> get_min_max_avg')
+                    if except_key is not None:
+                        # print('Trying Exception Key: graph.py -> get_min_max_avg')
+                        try:
+                            seq = [x[except_key] for x in hourly_data]
+                        except KeyError:
+                            print('Except Key Error: graph.py -> get_min_max_avg')
+                            hourly_data = list()
+                            timestamp = record['timestamp']
+                            continue
+                    else:
+                        hourly_data = list()
+                        timestamp = record['timestamp']
+                        continue
+                try:
+                    datetime_objs.append(self.ts.date_obj_from_timestamp(timestamp))
+                    maximums.append(max(seq))
+                    minimums.append(min(seq))
+                    averages.append(mean(seq))
+                    # hour_obj = {
+                    #     'timestamp': timestamp,
+                    #     'min_value': minimum,
+                    #     'max_value': maximum,
+                    #     'avg_value': average
+                    # }
+                except Exception as e:
+                    print('Error: graph.py -> get_min_max_avg')
+                    print(e)
+                # data_by_hour.append(hour_obj)
+                hourly_data = list()
+                timestamp = record['timestamp']
+        dataobj = {
+            'datetime_objs': datetime_objs,
+            'maximums': maximums,
+            'minimums': minimums,
+            'averages': averages
+        }
+        return dataobj
+
+    def get_all_select_graph(self, graph_type: str):
+        graph_type = graph_type.lower()
+        x_label = 'Datetime'
+        if graph_type == 'temperature':
+            data = self.get_min_max_avg('calibration_temperature', 'air_temperature_C')
+            title = 'Temperature Over Time'
+            if self.config.get_setting('units', 'unit') == 'imperial':
+                y_label = 'Temperature (F)'
+                minimums_converted = list()
+                maximums_converted = list()
+                averages_converted = list()
+                for value in data['minimums']:
+                    minimums_converted.append(self.convert.temperature(value))
+                for value in data['maximums']:
+                    maximums_converted.append(self.convert.temperature(value))
+                for value in data['averages']:
+                    averages_converted.append(self.convert.temperature(value))
+                data['minimums'] = minimums_converted
+                data['maximums'] = maximums_converted
+                data['averages'] = averages_converted
+            else:
+                y_label = 'Temperature (C)'
+        else:
+            return html.Div([])
+        fig = go.Figure()
+        fig.add_trace(go.Scatter(x=data['datetime_objs'], y=data['minimums'], name='Minimum',
+                                 line={'width': 3, 'color': '#00cc96'}, mode='lines+markers',))
+        fig.add_trace(go.Scatter(x=data['datetime_objs'], y=data['averages'], name='Average',
+                                 line={'width': 3, 'color': '#636dfa'}, mode='lines+markers',))
+        fig.add_trace(go.Scatter(x=data['datetime_objs'], y=data['maximums'], name='Maximum',
+                                 line={'width': 3, 'color': '#cc553b'},  mode='lines+markers',))
+        fig.update_layout(
+            title=title,
+            xaxis_title=x_label,
+            yaxis_title=y_label,
+            margin=dict(l=0, r=0)
+        )
+        fig.update_layout(
+            xaxis=dict(
+                rangeselector=dict(
+                    buttons=list([
+                        dict(count=1,
+                             label="1h",
+                             step="hour",
+                             stepmode="backward"),
+                        dict(count=1,
+                             label="1d",
+                             step="day",
+                             stepmode="backward"),
+                        dict(count=7,
+                             label="1w",
+                             step="day",
+                             stepmode="backward"),
+                        dict(count=1,
+                             label="1m",
+                             step="month",
+                             stepmode="backward"),
+                        dict(count=6,
+                             label="6m",
+                             step="month",
+                             stepmode="backward"),
+                        dict(count=1,
+                             label="YTD",
+                             step="year",
+                             stepmode="todate"),
+                        dict(count=1,
+                             label="1y",
+                             step="year",
+                             stepmode="backward"),
+                        dict(step="all")
+                    ])
+                ),
+                rangeslider=dict(
+                    visible=True
+                ),
+                type="date"
+            )
+        )
+        fig.show()
+        return html.Div([dcc.Graph(figure=fig, style={'height': '60vh'})])
+
+
+
 
 
 def main():
     graph = Graph()
-    graph.get_single_select_graph(4144723677, 'humidity')
+    # graph.get_single_select_graph('4144723677 -> Temperature')
+    # graph.get_min_max_avg('calibration_temperature', 'air_temperature_C')
+    graph.get_all_select_graph('temperature')
 
 
 if __name__ == '__main__':
