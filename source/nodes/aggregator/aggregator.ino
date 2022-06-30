@@ -8,6 +8,7 @@
 DynamicJsonDocument command(512);
 DynamicJsonDocument newNode(128);
 DynamicJsonDocument received(4096);
+DynamicJsonDocument connection(128);
 
 Scheduler userScheduler;
 painlessMesh mesh;
@@ -54,6 +55,15 @@ void sendMessage()
 //      Serial.println("broadcasting: %s", String(command["message"]));
 //      Serial.println(message);
       mesh.sendBroadcast(message);
+    }
+    else if (nodeId == 2)
+    {
+      connection["node_id"] = mesh.getNodeId();
+      connection["connection_strength"] = WiFi.RSSI(0);
+      String str = "";
+      serializeJson(connection, str);
+      str += "*";
+      Serial.println(str);
     }
     else
     {
