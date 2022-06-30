@@ -55,6 +55,7 @@ const float WIND_DIR_MAX = 4000.0;
 const float WIND_DIR_DEG_PER_COUNT = 1.0;
 
 void getNodeIdData();
+void getConnectionStrength();
 void getPowerData();
 void getAtmosphericData();
 void getAirQualityData();
@@ -182,6 +183,7 @@ void loop()
 String allSensorDataString()
 {
   getNodeIdData();
+  getConnectionStrength();
   getPowerData();
   getAtmosphericData();
   getAirQualityData();
@@ -198,6 +200,11 @@ String allSensorDataString()
 void getNodeIdData()
 {
   data["node_id"] = mesh.getNodeId();
+}
+
+void getConnectionStrength()
+{
+  data["connection_strength"] = WiFi.RSSI(0);
 }
 
 void getPowerData()
