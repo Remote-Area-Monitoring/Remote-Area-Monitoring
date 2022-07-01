@@ -115,6 +115,14 @@ void setup()
   digitalWrite(CAMERA_CS, HIGH);
   SPI.begin();
 
+  
+  bme.setSampling(Adafruit_BME280::MODE_NORMAL,
+                    Adafruit_BME280::SAMPLING_X2,  // temperature
+                    Adafruit_BME280::SAMPLING_X16, // pressure
+                    Adafruit_BME280::SAMPLING_X1,  // humidity
+                    Adafruit_BME280::FILTER_X16,
+                    Adafruit_BME280::STANDBY_MS_0_5 );
+
   //Reset the CPLD
   myCAM.write_reg(0x07, 0x80);
   delay(100);
@@ -191,6 +199,7 @@ String allSensorDataString()
   getWindSpeed();
   getWindDirection();
   getCompassData();
+  getCalibrationTemperature();
 
   String str = "";
   serializeJson(data, str);
@@ -217,9 +226,11 @@ void getPowerData()
 
 void getAtmosphericData()
 {
-  getTemperatureOffset();
-  bme.setTemperatureCompensation(data["offset_temperature"]);
-  data["bme_offset_temperature"] = bme.getTemperatureCompensation();
+//  getTemperatureOffset();
+//  bme.setTemperatureCompensation(data["offset_temperature"]);
+//  data["bme_offset_temperature"] = bme.getTemperatureCompensation();
+  bme.takeForcedMeasurement();
+  data["air_temperature_C"] = bme.readTemperature();
   data["humidity"] = bme.readHumidity();
   data["air_pressure_Pa"] = bme.readPressure();
 }
@@ -283,30 +294,31 @@ void getCompassData()
   // data["direction"] = String(direction);
 }
 
-float getCalibrationTemperature()
+void getCalibrationTemperature()
 {
   ds18.requestTemperatures();
   float temp = ds18.getTempCByIndex(0);
-  if (temp == DEVICE_DISCONNECTED_C)
-  {
-    data["calibration_temperature"] = false;
-    return bme.readTemperature();
-  }
-  else
-  {
-    data["calibration_temperature"] = temp;
-    return temp;
-  }
+  data["calibration_temperature"] = temp;
+//  if (temp == DEVICE_DISCONNECTED_C)
+//  {
+//    data["calibration_temperature"] = false;
+//    return bme.readTemperature();
+//  }
+//  else
+//  {
+//    data["calibration_temperature"] = temp;
+//    return temp;
+//  }
 }
 
-float getTemperatureOffset()
-{
-  float bme_temp = bme.readTemperature();
-  data["air_temperature_C"] = bme_temp;
-  float offset = getCalibrationTemperature() - bme_temp;
-  data["offset_temperature"] = offset;
-  return offset;
-}
+//float getTemperatureOffset()
+//{
+//  float bme_temp = bme.readTemperature();
+//  data["air_temperature_C"] = bme_temp;
+//  float offset = getCalibrationTemperature() - bme_temp;
+//  data["offset_temperature"] = offset;
+//  return offset;
+//}
 
 
 int capture(uint32_t from)
