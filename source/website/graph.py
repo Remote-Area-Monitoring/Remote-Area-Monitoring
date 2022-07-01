@@ -230,6 +230,15 @@ class Graph:
                     y_data.append(self.convert.power(record['power_mW']))
                 except IndexError:
                     continue
+        elif 'connection' in data_type:
+            title = '(' + str(node_id) + ') Mesh Connection Strength Over Time'
+            y_label = 'Signal Strength (dB)'
+            for record in data:
+                try:
+                    x_data.append(record['timestamp'])
+                    y_data.append(record['connection_strength'])
+                except KeyError:
+                    continue
         else:
             return html.Div([])
         fig = go.Figure()
