@@ -467,6 +467,13 @@ class Graph:
             yaxis_title=y_label,
             margin=dict(l=0, r=0)
         )
+        fig.update_layout(legend=dict(
+            orientation="h",
+            yanchor="bottom",
+            y=1.02,
+            xanchor="right",
+            x=1
+        ))
         fig.update_layout(
             xaxis=dict(
                 rangeselector=dict(
