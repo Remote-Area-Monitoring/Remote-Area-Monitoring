@@ -256,6 +256,9 @@ class Map:
                                 mapbox_style="stamen-terrain")
         fig.show()
 
+    def get_animated_heatmap(self):
+        pass
+
 
 
 
