@@ -55,6 +55,7 @@ class NodeDetails:
     def __get_rows(self):
         rows = list()
         break_row = dbc.Row([dbc.Col([html.Br()], width='auto')], justify='center')
+        rows.append(break_row)
 
         row_1 = dbc.Row([dbc.Col([html.H2('Environmental Data for ' + str(self.node_id))], width='auto')],
                         justify='center')
