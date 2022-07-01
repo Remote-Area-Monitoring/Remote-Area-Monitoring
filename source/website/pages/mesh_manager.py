@@ -1,3 +1,5 @@
+import json
+
 from source.util.analysis import Analysis
 from source.util.database import Database
 from dash import html, dcc
@@ -8,6 +10,7 @@ from source.util.conversions import Convert
 from source.website.map import Map
 from source.util.image import Image
 from source.util.timekeeper import Timestamps
+import dash_renderjson
 
 
 class Manager:
@@ -199,6 +202,8 @@ class Manager:
         image_polling = self.config.get_bool_setting('mesh_network', 'image_polling')
         if image_polling is None:
             image_polling = False
+        last_updated = self.ts.get_time_date_string(self.nodes_config.get_float_setting('connected_nodes',
+                                                                                        'last_updated'))
         network_quick_controls = dbc.Row([
             dbc.Col([
                 html.Div([
@@ -214,6 +219,9 @@ class Manager:
                             )
                         ], width='auto'),
                     ], justify='center'),
+                    break_row,
+                    dbc.Row([dbc.Col([html.P('Last Updated: ' + last_updated, style={'font-size': '14px'})],
+                                     width='auto')], justify='center'),
                     html.Hr(className="my-2"),
                     html.P('Quick Controls'),
                     dbc.Row([
@@ -246,7 +254,7 @@ class Manager:
         rows.append(break_row)
         rows.append(line_row)
 
-        map_title = dbc.Row([dbc.Col([html.H2('Node Map with Hover Detail')], width='auto')],
+        map_title = dbc.Row([dbc.Col([html.H2('Mesh Nodes Map')], width='auto')],
                         justify='center')
         rows.append(map_title)
 
@@ -258,6 +266,27 @@ class Manager:
             ], width='8', xl='6')
         ], justify='center')
         rows.append(network_map)
+
+        rows.append(break_row)
+
+        topology_title = dbc.Row([dbc.Col([html.H4('Network Topology')], width='auto')], justify='center')
+        rows.append(topology_title)
+        last_updated = self.ts.get_time_date_string(self.nodes_config.get_float_setting('connected_nodes',
+                                                                                        'last_updated'))
+        last_updated_row = dbc.Row([dbc.Col([html.P('Last Updated: ' + last_updated)], width='auto')], justify='center')
+        rows.append(last_updated_row)
+
+        topology = self.nodes_config.get_setting('connected_nodes', 'topology')
+        if topology is None:
+            topology_row = dbc.Row([dbc.Col([html.P('No Topology Data Available')], width='auto')], justify='center')
+        else:
+            topology = json.loads(topology)
+            topology_row = dbc.Row([
+                dbc.Col([
+                    dash_renderjson.DashRenderjson(id='no-id-topology', data=topology, max_depth=-1, invert_theme=True)
+                ], width='auto')
+            ], justify='center')
+        rows.append(topology_row)
 
         hidden_divs = dbc.Row([
             html.Div([], id='network-hidden-div-polling-switch'),
