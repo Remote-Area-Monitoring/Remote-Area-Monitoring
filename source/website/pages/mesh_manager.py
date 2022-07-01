@@ -169,6 +169,8 @@ class Manager:
 
         connected_nodes = self.nodes_config.get_list_setting('connected_nodes', 'node_ids')
         nodes = self.nodes_db.get_all()
+        # TODO: Fix error when connected nodes is none
+        # TODO: fix error in nodes list for same probelm
         if connected_nodes is not None and len(connected_nodes) > 0:
             num_nodes = len(connected_nodes)
             if num_nodes == 1:
@@ -187,7 +189,7 @@ class Manager:
             elif node['status'] == 'active':
                 num_disconnected += 1
                 network_status = 'Degraded'
-                status_color = '#fcfc21'
+                status_color = '#f59042'
         if 'Degraded' in network_status:
             if num_disconnected == 1:
                 network_status += ': ' + str(num_disconnected) + ' Node Disconnected'
