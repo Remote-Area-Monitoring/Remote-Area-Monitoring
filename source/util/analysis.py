@@ -33,5 +33,5 @@ class Analysis:
 
     def get_node_graphs_list(self):
         graphs = ['Temperature', 'Humidity', 'Pressure', 'CO2', 'TVOC', 'Soil Moisture', 'Wind Speed', 'Wind Direction',
-                  'Battery Voltage', 'Battery Current', 'Bus Power']
+                  'Battery Voltage', 'Battery Current', 'Bus Power', 'Mesh Connection Strength']
         return graphs
