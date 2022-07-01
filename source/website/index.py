@@ -211,7 +211,7 @@ def display_page(pathname):
     elif pathname == '/mesh-manager':
         return mesh_manager.Manager().get_layout()
     else:
-        return home.Home().get_layout()
+        return dashboard.Dashboard().get_layout()
 
 
 if __name__ == '__main__':
