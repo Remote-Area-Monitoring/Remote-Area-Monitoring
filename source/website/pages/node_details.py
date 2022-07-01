@@ -352,7 +352,7 @@ class NodeDetails:
         last_updated_string = self.ts.get_long_timestring(connection_last_updated)
         connection_status = 'Disconnected'
         connection_color = 'red'
-        if connected_nodes is not None and len(connected_nodes) > 1:
+        if connected_nodes is not None and len(connected_nodes) > 0:
             if self.node_id in connected_nodes:
                 connection_status = 'Connected'
                 connection_color = 'green'
