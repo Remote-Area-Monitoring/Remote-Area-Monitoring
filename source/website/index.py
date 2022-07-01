@@ -101,6 +101,7 @@ navbar = dbc.Navbar(
     color="dark",
     dark=True,
     className="ml-auto",
+    sticky='top'
 )
 
 app.layout = html.Div([
@@ -108,6 +109,17 @@ app.layout = html.Div([
     navbar,
     html.Div(id='page-content')
 ])
+
+
+@app.callback(
+    Output("navbar-collapse", "is_open"),
+    [Input("navbar-toggler", "n_clicks")],
+    [State("navbar-collapse", "is_open")],
+)
+def toggle_navbar_collapse(n, is_open):
+    if n:
+        return not is_open
+    return is_open
 
 
 @app.callback(Output('map-example-view', 'children'),
