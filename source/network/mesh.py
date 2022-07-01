@@ -64,6 +64,8 @@ class Mesh:
             return data
         elif 'node_id' not in data:
             data = self.receive_json()
+        if data is None:
+            return data
         if 'node_id' not in data:
             return None
         # print(data)
@@ -139,6 +141,10 @@ class Mesh:
         return data_with_timestamp
 
     def update_nodes_sensor_data(self):
+        polling_enable = self.config.get_bool_setting('mesh_network', 'sensor_polling')
+        if polling_enable is False:
+            print('Sensor Polling Disabled')
+            return None
         records = list()
         nodes = self.nodes_db.get_all()
         for node in nodes:
@@ -225,6 +231,10 @@ class Mesh:
         return image_data
 
     def update_nodes_image_data(self):
+        polling_enable = self.config.get_bool_setting('mesh_network', 'image_polling')
+        if polling_enable is False:
+            print('Image Polling Disabled - Capture Suspended')
+            return None
         # TODO: images can be saturated with green after overnight - need to create an init func for cam on arduino side
         # TODO: implement astral in place of suntime - sunset bug
         # if not self.sun.is_daytime():
@@ -343,10 +353,10 @@ def main():
                 print(command.get_topology())
                 command.update_nodes_sensor_data()
                 sensor_start = time.time()
-            # if time.time() - cam_start > cam_interval:
-            #     print(command.get_topology())
-            #     command.update_nodes_image_data()
-            #     cam_start = time.time()
+            if time.time() - cam_start > cam_interval:
+                print(command.get_topology())
+                command.update_nodes_image_data()
+                cam_start = time.time()
         except KeyboardInterrupt:
             exit(0)
 
