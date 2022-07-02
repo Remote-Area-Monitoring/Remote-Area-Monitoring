@@ -96,6 +96,12 @@ class Gauges:
         max_co2 = self.config.get_int_setting('units', 'max_co2')
         min_tvoc = self.config.get_int_setting('units', 'min_tvoc')
         max_tvoc = self.config.get_int_setting('units', 'max_tvoc')
+        if pressure_mbar > max_mbar:
+            max_mbar = round(pressure_mbar)
+        if co2 > max_co2:
+            max_co2 = round(co2)
+        if tvoc > max_tvoc:
+            max_tvoc = round(tvoc)
 
         row_1 = dbc.Row([
             dbc.Col([
