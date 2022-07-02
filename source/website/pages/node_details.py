@@ -55,6 +55,7 @@ class NodeDetails:
     def __get_rows(self):
         rows = list()
         break_row = dbc.Row([dbc.Col([html.Br()], width='auto')], justify='center')
+        rows.append(break_row)
 
         row_1 = dbc.Row([dbc.Col([html.H2('Environmental Data for ' + str(self.node_id))], width='auto')],
                         justify='center')
@@ -351,7 +352,7 @@ class NodeDetails:
         last_updated_string = self.ts.get_long_timestring(connection_last_updated)
         connection_status = 'Disconnected'
         connection_color = 'red'
-        if connected_nodes is not None and len(connected_nodes) > 1:
+        if connected_nodes is not None and len(connected_nodes) > 0:
             if self.node_id in connected_nodes:
                 connection_status = 'Connected'
                 connection_color = 'green'

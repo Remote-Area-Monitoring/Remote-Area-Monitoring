@@ -62,9 +62,11 @@ class Mesh:
         data = self.receive_json()
         if data is None:
             return data
-        elif 'node_id' not in data:
+        elif 'connection_strength' not in data:
             data = self.receive_json()
-        if 'node_id' not in data:
+        if data is None:
+            return data
+        if 'connection_strength' not in data:
             return None
         # print(data)
         return data
@@ -139,9 +141,24 @@ class Mesh:
         return data_with_timestamp
 
     def update_nodes_sensor_data(self):
+        polling_enable = self.config.get_bool_setting('mesh_network', 'sensor_polling')
+        sensors_last_updated = self.nodes_config.get_float_setting('connected_nodes', 'sensors_last_updated')
+        sensors_polling_interval = self.config.get_float_setting('mesh_network', 'sensor_polling_interval')
+        if polling_enable is False:
+            print('Sensor Polling Disabled')
+            return None
+        elif self.ts.get_timestamp() - sensors_last_updated < sensors_polling_interval:
+            return None
+        self.nodes_config.set_setting('connected_nodes', 'sensors_last_updated', str(self.ts.get_timestamp()))
+        print(self.get_topology())
         records = list()
         nodes = self.nodes_db.get_all()
         for node in nodes:
+            connected_nodes = self.nodes_config.get_list_setting('connected_nodes', 'node_ids')
+            if connected_nodes is None or len(connected_nodes) < 1:
+                continue
+            if node['node_id'] not in connected_nodes:
+                continue
             if node['status'] == 'active' and node['node_config']['sensors'] is True:
                 data = self.get_sensor_data(node['node_id'])
                 if data is not None:
@@ -225,11 +242,19 @@ class Mesh:
         return image_data
 
     def update_nodes_image_data(self):
+        polling_enable = self.config.get_bool_setting('mesh_network', 'image_polling')
+        images_last_updated = self.nodes_config.get_float_setting('connected_nodes', 'images_last_updated')
+        image_polling_interval = self.config.get_float_setting('mesh_network', 'image_polling_interval')
+        if polling_enable is False:
+            # print('Image Polling Disabled - Capture Suspended')
+            return None
+        elif self.ts.get_timestamp() - images_last_updated < image_polling_interval:
+            # print('Image Capture Waiting - Seconds Remaining: ', self.ts.get_timestamp() - images_last_updated)
+            return None
         # TODO: images can be saturated with green after overnight - need to create an init func for cam on arduino side
         # TODO: implement astral in place of suntime - sunset bug
-        # if not self.sun.is_daytime():
-        #     print('Nighttime - Image Capture Suspended')
-        #     return None
+        print(self.get_topology())
+        self.nodes_config.set_setting('connected_nodes', 'images_last_updated', str(self.ts.get_timestamp()))
         attempts = self.config.get_int_setting('mesh_network', 'image_retry')
         retry_delay = self.config.get_int_setting('mesh_network', 'image_retry_delay')
         nodes = self.nodes_db.get_all()
@@ -334,19 +359,28 @@ def main():
     sensor_start = 0
     cam_start = 0
     connected_start = 0
+    # while True:
+    #     try:
+    #         if time.time() - connected_start > connected_interval:
+    #             command.update_connected_nodes()
+    #             connected_start = time.time()
+    #         if time.time() - sensor_start > sensor_interval:
+    #             print(command.get_topology())
+    #             command.update_nodes_sensor_data()
+    #             sensor_start = time.time()
+    #         if time.time() - cam_start > cam_interval:
+    #             print(command.get_topology())
+    #             command.update_nodes_image_data()
+    #             cam_start = time.time()
+    #     except KeyboardInterrupt:
+    #         exit(0)
     while True:
         try:
             if time.time() - connected_start > connected_interval:
                 command.update_connected_nodes()
                 connected_start = time.time()
-            if time.time() - sensor_start > sensor_interval:
-                print(command.get_topology())
-                command.update_nodes_sensor_data()
-                sensor_start = time.time()
-            # if time.time() - cam_start > cam_interval:
-            #     print(command.get_topology())
-            #     command.update_nodes_image_data()
-            #     cam_start = time.time()
+            command.update_nodes_sensor_data()
+            command.update_nodes_image_data()
         except KeyboardInterrupt:
             exit(0)
 

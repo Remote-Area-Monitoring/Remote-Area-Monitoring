@@ -1,4 +1,4 @@
-from dash import dcc, html, Input, Output, State
+from dash import dcc, html, Input, Output, State, callback_context
 import dash_bootstrap_components as dbc
 from app import app
 from map import Map
@@ -13,38 +13,95 @@ from source.website.graph import Graph
 from source.util.timekeeper import Timestamps
 from source.website.gauges import Gauges
 from source.website.pages import home, map_example, node_table, updater, example_maps, image_example, node_details, \
-    node_list, dashboard
+    node_list, dashboard, mesh_manager
 
 config = Settings('general.config')
+nodes_config = Settings('nodes.config')
 nodes_db = Database(config.get_setting('databases', 'nodes_db_path'))
 sensors_db = Database(config.get_setting('databases', 'sensor_data_db_path'))
 mesh = Mesh()
 
 
-navbar = dbc.NavbarSimple(
-    children=[
-        dbc.NavItem(dbc.NavLink("Home Page", href="/home")),
-        dbc.NavItem(dbc.NavLink("Node List", href="/node-list")),
-        dbc.NavItem(dbc.NavLink("Dashboard", href="/dashboard")),
+# navbar = dbc.NavbarSimple(
+#     children=[
+#         dbc.NavItem(dbc.NavLink("Home Page", href="/home")),
+#         dbc.NavItem(dbc.NavLink("Node List", href="/node-list")),
+#         dbc.NavItem(dbc.NavLink("Dashboard", href="/dashboard")),
+#         dbc.NavItem(dbc.NavLink("Network", href="/mesh-manager")),
+#         dbc.DropdownMenu(
+#             children=[
+#                 dbc.DropdownMenuItem("Dev Tools", header=True),
+#                 dbc.DropdownMenuItem("Map Test", href="/map-example"),
+#                 dbc.DropdownMenuItem("Nodes List Table", href="/nodes-table"),
+#                 dbc.DropdownMenuItem("Example Maps", href="/example-maps"),
+#                 dbc.DropdownMenuItem("Example Image", href="/example-image"),
+#                 dbc.DropdownMenuItem("Example Node Detail", href="/node_details-4144723677"),
+#             ],
+#             nav=True,
+#             in_navbar=True,
+#             label="Developer",
+#         ),
+#         dbc.NavItem(dbc.NavLink("Login", href="/login")),
+#     ],
+#     brand="Remote Area Monitoring",
+#     brand_href="/home",
+#     color="primary",
+#     dark=True,
+# )
+
+nav_items = dbc.Row([
+    dbc.Col([dbc.NavItem(dbc.NavLink("Dashboard", href="/dashboard"))], width='auto'),
+    dbc.Col([dbc.NavItem(dbc.NavLink("Node List", href="/node-list"))], width='auto'),
+    dbc.Col([dbc.NavItem(dbc.NavLink("Network", href="/mesh-manager"))], width='auto'),
+    dbc.Col([
         dbc.DropdownMenu(
-            children=[
-                dbc.DropdownMenuItem("Dev Tools", header=True),
-                dbc.DropdownMenuItem("Map Test", href="/map-example"),
-                dbc.DropdownMenuItem("Nodes List Table", href="/nodes-table"),
-                dbc.DropdownMenuItem("Example Maps", href="/example-maps"),
-                dbc.DropdownMenuItem("Example Image", href="/example-image"),
-                dbc.DropdownMenuItem("Example Node Detail", href="/node_details-4144723677"),
-            ],
-            nav=True,
-            in_navbar=True,
-            label="Developer",
-        ),
-        dbc.NavItem(dbc.NavLink("Login", href="/login")),
+                children=[
+                    dbc.DropdownMenuItem("Dev Tools", header=True),
+                    dbc.DropdownMenuItem("Map Test", href="/map-example"),
+                    dbc.DropdownMenuItem("Nodes List Table", href="/nodes-table"),
+                    dbc.DropdownMenuItem("Example Maps", href="/example-maps"),
+                    dbc.DropdownMenuItem("Example Image", href="/example-image"),
+                    dbc.DropdownMenuItem("Example Node Detail", href="/node_details-4144723677"),
+                ],
+                nav=True,
+                in_navbar=True,
+                label="Developer",
+            )
+        ], width='auto')
     ],
-    brand="Remote Area Monitoring",
-    brand_href="/home",
-    color="primary",
+    className="g-0 ms-auto flex-nowrap mt-3 mt-md-0",
+    align="center",
+)
+
+navbar = dbc.Navbar(
+    dbc.Container(
+        [
+            html.A(
+                # Use row and col to control vertical alignment of logo / brand
+                dbc.Row(
+                    [
+                        dbc.Col(html.Img(src='/assets/logo_no_background.png', height="50px")),
+                        dbc.Col(dbc.NavbarBrand("Remote Area Monitoring", className="ms-2")),
+                    ],
+                    align="center",
+                    className="ml-auto",
+                ),
+                href="/dashboard",
+                style={"textDecoration": "none"},
+            ),
+            dbc.NavbarToggler(id="navbar-toggler", n_clicks=0),
+            dbc.Collapse(
+                nav_items,
+                id="navbar-collapse",
+                is_open=False,
+                navbar=True,
+            ),
+        ]
+    ),
+    color="dark",
     dark=True,
+    className="ml-auto",
+    sticky='top'
 )
 
 app.layout = html.Div([
@@ -52,6 +109,17 @@ app.layout = html.Div([
     navbar,
     html.Div(id='page-content')
 ])
+
+
+@app.callback(
+    Output("navbar-collapse", "is_open"),
+    [Input("navbar-toggler", "n_clicks")],
+    [State("navbar-collapse", "is_open")],
+)
+def toggle_navbar_collapse(n, is_open):
+    if n:
+        return not is_open
+    return is_open
 
 
 @app.callback(Output('map-example-view', 'children'),
@@ -103,6 +171,35 @@ def update_dashboard_graph(value):
     return Graph().get_all_select_graph(value)
 
 
+@app.callback(Output('network-hidden-div-polling-switch', 'children'),
+              [Input('network-sensor-polling-switch', 'value'),
+               Input('network-image-polling-switch', 'value')])
+def update_network_polling(sensor_polling, image_polling):
+    config.set_setting('mesh_network', 'sensor_polling', str(sensor_polling))
+    config.set_setting('mesh_network', 'image_polling', str(image_polling))
+
+
+@app.callback(Output('mesh-settings-modal', 'is_open'),
+              [
+                Input('mesh-open-settings-button', 'n_clicks'),
+                Input('mesh-settings-close', 'n_clicks'),
+                Input('mesh-settings-save-close', 'n_clicks')
+              ],
+              State('mesh-settings-modal', 'is_open'))
+def update_mesh_settings_modal_state(open_clicks, close_clicks, close_save_clicks, modal_state):
+    changed_id = [p['prop_id'] for p in callback_context.triggered][0]
+    if 'mesh-settings-save-close' in changed_id:
+        print('Save and Close Clicked')
+        return not modal_state
+    elif 'mesh-open-settings-button' in changed_id:
+        print('Open Button Clicked')
+        return not modal_state
+    elif 'mesh-settings-close' in changed_id:
+        print('Close Button Clicked')
+        return not modal_state
+    return modal_state
+
+
 # Navigate pages
 @app.callback(Output('page-content', 'children'),
               Input('url', 'pathname'))
@@ -123,8 +220,10 @@ def display_page(pathname):
         return node_list.NodeList().get_layout()
     elif pathname == '/dashboard':
         return dashboard.Dashboard().get_layout()
+    elif pathname == '/mesh-manager':
+        return mesh_manager.Manager().get_layout()
     else:
-        return home.Home().get_layout()
+        return dashboard.Dashboard().get_layout()
 
 
 if __name__ == '__main__':

@@ -52,6 +52,9 @@ class Timestamps:
     def day_of_month_from_timestamp(self, timestamp):
         return datetime.fromtimestamp(timestamp).day
 
+    def hour_from_timestamp(self, timestamp):
+        return datetime.fromtimestamp(timestamp).hour
+
     def get_timestamp(self):
         return datetime.now().timestamp()
 

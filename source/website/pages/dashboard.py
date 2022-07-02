@@ -1,5 +1,4 @@
 from source.util.analysis import Analysis
-from source.network.mesh import Mesh
 from source.util.database import Database
 from dash import html, dcc
 import dash_bootstrap_components as dbc

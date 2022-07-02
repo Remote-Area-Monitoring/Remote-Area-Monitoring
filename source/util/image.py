@@ -56,13 +56,24 @@ class Image:
         jpg = bytearray(pixels)
         buf = io.BytesIO(jpg)
         img = pil.open(buf)
+        width, height = img.size
         fig = px.imshow(img)
         title_div = html.Div([
             html.H2(str(node_id))
+        ],
+            style={'display': 'flex', 'justifyContent': 'center'}
+        )
+        date_taken = html.Div([
+            html.P('Capture Date: ' + self.ts.get_time_date_string(image['timestamp']))
             ],
             style={'display': 'flex', 'justifyContent': 'center'}
         )
-        divs = [title_div, html.Br(), dcc.Graph(figure=fig)]
+        size_div = html.Div([
+            html.P('Resolution: {} x {} pixels'.format(width, height))
+            ],
+            style={'display': 'flex', 'justifyContent': 'center'}
+        )
+        divs = [title_div, date_taken, html.Br(), size_div, html.Br(), dcc.Graph(figure=fig)]
         # div = html.Div([
         #     html.H2(str(node_id)),
         #     html.Br(),
