@@ -105,7 +105,6 @@ void setup()
   ds18.begin();
 
   pinMode(WIND_SPEED_PIN, INPUT);
-  attachInterrupt(WIND_SPEED_PIN, countPulses, RISING);
 
   pinMode(WIND_DIR_PIN, INPUT);
 
@@ -254,12 +253,27 @@ void countPulses()
 
 void getWindSpeed()
 {
-  pulses = 0;
-  interrupts();
-  delay(1000);
-  noInterrupts();
-  float windSpeed = pulses / WIND_SPEED_CONST;
-  data["wind_speed_mph"] = windSpeed;
+  unsigned long timeout = 1000000;
+  int cal_factor = 585000;
+  long avg = 0;
+  long mph = 0;
+  int count = 2;
+  
+  for (int i = 0; i < count; i++)
+  {
+    avg += pulseIn(WIND_SPEED_PIN, LOW, timeout);
+  }
+  avg /= count;
+  
+  if (avg <= 0.0)
+  {
+    mph = 0;
+  }
+  else
+  {
+    mph = cal_factor / avg;
+  }
+  data["wind_speed_mph"] = mph;
 }
 
 void getWindDirection()
