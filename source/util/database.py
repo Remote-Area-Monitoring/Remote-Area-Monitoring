@@ -1,6 +1,7 @@
 from tinydb import TinyDB
 from tinydb import Query
 from source.util.timekeeper import Timestamps
+from source.util.settings import Settings
 
 
 class Database:
@@ -40,3 +41,16 @@ class Database:
 
     def remove_single_record(self, dataobj):
         return self.db.remove(Query().fragment(dataobj))
+
+
+def main():
+    config = Settings('general.config')
+    sensor_db = Database(config.get_setting('databases', 'sensor_data_db_path'))
+    dataobj = {
+        'wind_speed_mph': 585000
+    }
+    print(sensor_db.remove_single_record(dataobj))
+
+
+if __name__ == '__main__':
+    main()
