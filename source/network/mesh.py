@@ -10,6 +10,7 @@ import re
 import sys
 from time import sleep
 from source.util.sun import Sunlight
+from source.util.conversions import Convert
 
 
 class Mesh:
@@ -17,6 +18,7 @@ class Mesh:
         self.ts = Timestamps()
         self.sun = Sunlight()
         self.image = Image()
+        self.convert = Convert()
         self.config = Settings('general.config')
         self.nodes_config = Settings('nodes.config')
         self.nodes_db = Database(self.config.get_setting('databases', 'nodes_db_path'))
@@ -136,6 +138,8 @@ class Mesh:
             data = self.receive_json()
         if data is None:
             return data
+        if 'wind_speed_raw' in data:
+            data['wind_speed_mph'] = self.convert.raw_wind_speed_to_mph(data['wind_speed_raw'])
         data_with_timestamp = {'timestamp': self.ts.get_timestamp()}
         data_with_timestamp.update(data)
         return data_with_timestamp
