@@ -65,6 +65,8 @@ void getWindDirection();
 void getCompassData();
 float getCalibratrionTemperature();
 
+void(* resetFunc) (void) = 0;
+
 void send_pixel_stats(uint32_t from, int packetNumber);
 int capture();
 void send_pixel_packet(uint32_t from);
@@ -81,6 +83,10 @@ void receivedCallback( uint32_t from, String &msg ) {
   {
     Serial.println("Starting Capture");
     capture(from);
+  }
+  else if (msg == "reset")
+  {
+    resetFunc();
   }
   else
   {
@@ -175,6 +181,8 @@ void setup()
   mesh.onReceive(&receivedCallback);
   Serial.print("Node_ID: ");
   Serial.println(mesh.getNodeId());
+
+  ccs.setDriveMode(CCS811_DRIVE_MODE_60SEC);
 }
 
 void loop() 
@@ -229,9 +237,12 @@ void getAtmosphericData()
 //  bme.setTemperatureCompensation(data["offset_temperature"]);
 //  data["bme_offset_temperature"] = bme.getTemperatureCompensation();
   bme.takeForcedMeasurement();
-  data["air_temperature_C"] = bme.readTemperature();
-  data["humidity"] = bme.readHumidity();
+  float temperature = bme.readTemperature();
+  float humidity = bme.readHumidity();
+  data["air_temperature_C"] = temperature;
+  data["humidity"] = humidity;
   data["air_pressure_Pa"] = bme.readPressure();
+  ccs.setEnvironmentalData(humidity, temperature);
 }
 
 void getAirQualityData()
@@ -254,48 +265,37 @@ void countPulses()
 void getWindSpeed()
 {
   unsigned long timeout = 1000000;
-  int cal_factor = 585000;
-  long avg = 0;
-  long mph = 0;
+//  int cal_factor = 585000;
   int count = 2;
+  String raw_data = "";
   
   for (int i = 0; i < count; i++)
   {
-    avg += pulseIn(WIND_SPEED_PIN, LOW, timeout);
+    raw_data += String(pulseIn(WIND_SPEED_PIN, LOW, timeout));
+    if (i < count - 1)
+    {
+      raw_data += "?";
+    }
   }
-  avg /= count;
-  
-  if (avg <= 0.0)
-  {
-    mph = 0;
-  }
-  else
-  {
-    mph = cal_factor / avg;
-  }
-  data["wind_speed_mph"] = mph;
+
+  data["wind_speed_raw"] = raw_data;
 }
 
 void getWindDirection()
 {
-  float averageCounts = 0.0;
-  int numPolls = 5;
+  unsigned long timeout = 1000000;
+  int count = 2;
+  String raw_data = "";
 
-  for (int i = 0; i < numPolls; i++)
+  for (int i = 0; i < count; i++)
   {
-    averageCounts += analogRead(WIND_DIR_PIN);
-    delay(5);
+    raw_data += String(pulseIn(WIND_DIR_PIN, LOW, timeout));
+    if (i < count - 1)
+    {
+      raw_data += "?";
+    }
   }
-  
-  averageCounts /= numPolls;
-  averageCounts = averageCounts - WIND_DIR_MIN;
-  // if (averageCounts < 0)
-  // {
-  //   averageCounts = 0;
-  // }
-
-  float windDirection = averageCounts / WIND_DIR_DEG_PER_COUNT;
-  data["wind_direction"] = windDirection;
+  data["wind_direction_raw"] = raw_data;
 }
 
 void getCompassData()
