@@ -1,3 +1,5 @@
+import statistics
+
 from dash import Dash, dcc, html, Input, Output, State
 import dash_bootstrap_components as dbc
 import plotly.express as px
@@ -8,11 +10,13 @@ from source.util.timekeeper import Timestamps
 import json
 import plotly.graph_objects as go
 from statistics import mean
+from source.util.conversions import Convert
 
 
 class Map:
     def __init__(self):
         self.ts = Timestamps()
+        self.convert = Convert()
         self.config = Settings('general.config')
         self.nodes_config = Settings('nodes.config')
         self.nodes_db = Database(self.config.get_setting('databases', 'nodes_db_path'))
@@ -257,14 +261,75 @@ class Map:
         fig.show()
 
     def get_animated_heatmap(self):
-        pass
+        data = list()
+        hours = range(0, 24)
+        nodes = self.nodes_db.get_all()
+        root_lat = self.config.get_float_setting('mesh_network', 'root_lat')
+        root_lon = self.config.get_float_setting('mesh_network', 'root_lon')
+        root_node_id = self.config.get_float_setting('mesh_network', 'root_id')
+        for node in nodes:
+            sensor_data = self.sensors_db.get_data_single_field('node_id', node['node_id'], self.ts.get_24h_timestamp())
+            timestamp = self.ts.get_24h_timestamp()
+            for hour in hours:
+                temperature_data = list()
+                for record in sensor_data:
+                    if self.ts.hour_from_timestamp(record['timestamp']) == hour:
+                        timestamp = record['timestamp']
+                        if 'calibration_temperature' in record:
+                            temperature_data.append(self.convert.temperature(record['calibration_temperature']))
+                        elif 'air_temperature_C' in record:
+                            temperature_data.append(self.convert.temperature(record['air_temperature_C']))
+                try:
+                    mag = mean(temperature_data)
+                except statistics.StatisticsError:
+                    mag = 0
+                dataobj = {
+                    'timestamp': timestamp,
+                    'node_id': node['node_id'],
+                    'lat': node['lat'],
+                    'lon': node['lon'],
+                    'mag': mag,
+                    'hour': hour
+                }
+                data.append(dataobj)
+        # for hour in hours:
+        #     hourly_data = list()
+        #     for record in data:
+        #         if record['hour'] == hour:
+        #             hourly_data.append(record)
+        #     mags = [x['mag'] for x in hourly_data]
+        #     try:
+        #         mag = mean(mags)
+        #     except statistics.StatisticsError:
+        #         mag = 0
+        #     dataobj = {
+        #         'node_id': root_node_id,
+        #         'lat': root_lat,
+        #         'lon': root_lon,
+        #         'mag': mag,
+        #         'hour': hour
+        #     }
+        #     data.append(dataobj)
+        # data.reverse()
+        data = sorted(data, key=lambda d: d['timestamp'])
+        mags = [x['mag'] for x in data]
+        max_mag = max(mags)
+        min_mag = min(mags)
+        for record in data:
+            print(record)
+        df = pd.DataFrame(data)
+        print(df)
+        fig = px.density_mapbox(df, lat='lat', lon='lon', z='mag', radius=100, center=dict(lat=root_lat, lon=root_lon),
+                                zoom=12, mapbox_style="stamen-terrain", animation_frame='hour', hover_name='node_id',
+                                range_color=[min_mag, max_mag])
+        fig.show()
 
 
 
 
 def main():
     map = Map()
-    map.get_heatmap()
+    map.get_animated_heatmap()
 
 
 if __name__ == '__main__':
