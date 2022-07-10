@@ -171,6 +171,12 @@ def update_dashboard_graph(value):
     return Graph().get_all_select_graph(value)
 
 
+@app.callback(Output('dash-map-view', 'children'),
+              Input('dash-map-drop', 'value'))
+def update_dashboard_graph(value):
+    return Map().get_animated_heatmap(value)
+
+
 @app.callback(Output('network-hidden-div-polling-switch', 'children'),
               [Input('network-sensor-polling-switch', 'value'),
                Input('network-image-polling-switch', 'value')])
