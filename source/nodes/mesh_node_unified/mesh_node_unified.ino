@@ -134,7 +134,7 @@ void setup()
   myCAM.write_reg(0x07, 0x00);
   delay(100);
 
-  while(1)
+  for (int i = 0; i < 15; i++)
   {
     //Check if the ArduCAM SPI bus is OK
     myCAM.write_reg(ARDUCHIP_TEST1, 0x55);
@@ -148,7 +148,7 @@ void setup()
   }
 
   #if defined (OV2640_MINI_2MP_PLUS)
-    while(1)
+    for (int i = 0; i < 15; i++)
     {
       //Check if the camera module type is OV2640
       myCAM.wrSensorReg8_8(0xff, 0x01);
