@@ -1,4 +1,5 @@
 from source.util.settings import Settings
+from statistics import mean
 
 
 class Convert:
@@ -27,9 +28,20 @@ class Convert:
         value = (1 - value) * 100
         return round(value, 2)
 
+    def raw_wind_speed_to_mph(self, values: str):
+        values = values.split('?')
+        values = [float(value) for value in values]
+        cal_factor = self.config.get_float_setting('units', 'wind_speed_cal_factor')
+        calculated_values = list()
+        for value in values:
+            if value > 0:
+                value = cal_factor / value
+            calculated_values.append(value)
+        return mean(calculated_values)
+
     def wind_speed(self, value):
         if self.system == 'imperial':
-            return value
+            return round(value, 2)
         value /= 2.237
         return round(value, 2)
 
