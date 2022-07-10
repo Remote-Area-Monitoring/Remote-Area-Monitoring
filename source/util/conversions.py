@@ -41,6 +41,25 @@ class Convert:
             calculated_values.append(value)
         return mean(calculated_values)
 
+    def raw_wind_direction_to_degrees(self, values: str):
+        values = values.split('?')
+        values = [float(value) for value in values]
+        cal_factor = self.config.get_float_setting('units', 'wind_dir_cal_factor')
+        min_counts = self.config.get_float_setting('units', 'wind_dir_min_counts')
+        calculated_values = list()
+        for value in values:
+            if value > 0:
+                value = 360 - ((value - min_counts) / cal_factor)
+            if 360 < value < 2 * 360:
+                value = value - 360
+            if -360 < value < 0:
+                value = abs(value)
+            if 0 <= value <= 360:
+                calculated_values.append(value)
+        if len(calculated_values) < 1:
+            calculated_values = [0]
+        return mean(calculated_values)
+
     def wind_speed(self, value):
         if self.system == 'imperial':
             return round(value, 2)
