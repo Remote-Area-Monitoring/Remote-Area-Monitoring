@@ -260,27 +260,82 @@ class Map:
                                 mapbox_style="stamen-terrain")
         fig.show()
 
-    def get_animated_heatmap(self):
+    def get_animated_heatmap(self, data_type: str):
+        data_type = data_type.lower()
         data = list()
         hours = range(0, 24)
         nodes = self.nodes_db.get_all()
         root_lat = self.config.get_float_setting('mesh_network', 'root_lat')
         root_lon = self.config.get_float_setting('mesh_network', 'root_lon')
-        root_node_id = self.config.get_float_setting('mesh_network', 'root_id')
+        if data_type == 'temperature':
+            title = 'Temperature Over the Last 24 Hours'
+            color_scale = 'thermal'
+            if self.config.get_setting('units', 'unit') == 'imperial':
+                mag_label = 'Temperature (F)'
+            else:
+                mag_label = 'Temperature (C)'
+        elif data_type == 'humidity':
+            title = 'Humidity Over the Last 24 Hours'
+            color_scale = 'haline'
+            mag_label = 'Humidity (%)'
+        elif data_type == 'pressure':
+            title = 'Pressure Over the Last 24 Hours'
+            color_scale = 'rainbow'
+            mag_label = 'Pressure (mbar)'
+        elif data_type == 'co2':
+            title = 'CO2 Over the Last 24 Hours'
+            color_scale = 'rainbow'
+            mag_label = 'CO2 (PPM)'
+        elif data_type == 'tvoc':
+            title = 'TVOC Over the Last 24 Hours'
+            color_scale = 'Plotly3'
+            mag_label = 'TVOC (PPB)'
+        elif 'soil' in data_type:
+            title = 'Soil Moisture Over the Last 24 Hours'
+            color_scale = 'Agsunset'
+            mag_label = 'Soil Saturation (%)'
+        elif 'speed' in data_type:
+            title = 'Wind Speed Over the Last 24 Hours'
+            color_scale = 'haline'
+            if self.config.get_setting('units', 'unit') == 'imperial':
+                mag_label = 'Speed (MPH)'
+            else:
+                mag_label = 'Speed (m/s)'
+        else:
+            return html.Div([html.P('No Data Available')])
         for node in nodes:
             sensor_data = self.sensors_db.get_data_single_field('node_id', node['node_id'], self.ts.get_24h_timestamp())
             timestamp = self.ts.get_24h_timestamp()
             for hour in hours:
-                temperature_data = list()
+                hourly_data = list()
                 for record in sensor_data:
                     if self.ts.hour_from_timestamp(record['timestamp']) == hour:
                         timestamp = record['timestamp']
-                        if 'calibration_temperature' in record:
-                            temperature_data.append(self.convert.temperature(record['calibration_temperature']))
-                        elif 'air_temperature_C' in record:
-                            temperature_data.append(self.convert.temperature(record['air_temperature_C']))
+                        if data_type == 'temperature':
+                            if 'calibration_temperature' in record:
+                                hourly_data.append(self.convert.temperature(record['calibration_temperature']))
+                            elif 'air_temperature_C' in record:
+                                hourly_data.append(self.convert.temperature(record['air_temperature_C']))
+                        elif data_type == 'humidity':
+                            if 'humidity' in record:
+                                hourly_data.append(self.convert.humidity(record['humidity']))
+                        elif data_type == 'pressure':
+                            if 'air_pressure_Pa' in record:
+                                hourly_data.append(self.convert.pressure_mbar(record['air_pressure_Pa']))
+                        elif data_type == 'co2':
+                            if 'co2_ppm' in record:
+                                hourly_data.append(record['co2_ppm'])
+                        elif data_type == 'tvoc':
+                            if 'tvoc_ppb' in record:
+                                hourly_data.append(record['tvoc_ppb'])
+                        elif 'soil' in data_type:
+                            if 'soil_moisture_adc' in record:
+                                hourly_data.append(self.convert.soil_moisture(record['soil_moisture_adc']))
+                        elif 'speed' in data_type:
+                            if 'wind_speed_mph' in record:
+                                hourly_data.append(self.convert.wind_speed(record['wind_speed_mph']))
                 try:
-                    mag = mean(temperature_data)
+                    mag = mean(hourly_data)
                 except statistics.StatisticsError:
                     mag = 0
                 dataobj = {
@@ -292,25 +347,6 @@ class Map:
                     'hour': hour
                 }
                 data.append(dataobj)
-        # for hour in hours:
-        #     hourly_data = list()
-        #     for record in data:
-        #         if record['hour'] == hour:
-        #             hourly_data.append(record)
-        #     mags = [x['mag'] for x in hourly_data]
-        #     try:
-        #         mag = mean(mags)
-        #     except statistics.StatisticsError:
-        #         mag = 0
-        #     dataobj = {
-        #         'node_id': root_node_id,
-        #         'lat': root_lat,
-        #         'lon': root_lon,
-        #         'mag': mag,
-        #         'hour': hour
-        #     }
-        #     data.append(dataobj)
-        # data.reverse()
         data = sorted(data, key=lambda d: d['timestamp'])
         mags = [x['mag'] for x in data]
         max_mag = max(mags)
@@ -321,15 +357,20 @@ class Map:
         print(df)
         fig = px.density_mapbox(df, lat='lat', lon='lon', z='mag', radius=100, center=dict(lat=root_lat, lon=root_lon),
                                 zoom=12, mapbox_style="stamen-terrain", animation_frame='hour', hover_name='node_id',
-                                range_color=[min_mag, max_mag])
-        fig.show()
+                                range_color=[min_mag, max_mag], labels={'mag': mag_label, 'hour': 'Hour of the Day'},
+                                title=title, color_continuous_scale=color_scale, height=700)
+        # fig.update_layout(margin={"r": 0, "t": 0, "l": 0, "b": 0})
+        div = html.Div([
+            dcc.Graph(figure=fig)
+        ])
+        return div
 
 
 
 
 def main():
     map = Map()
-    map.get_animated_heatmap()
+    map.get_animated_heatmap('Temperature')
 
 
 if __name__ == '__main__':
