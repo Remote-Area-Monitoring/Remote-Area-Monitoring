@@ -47,7 +47,7 @@ def main():
     config = Settings('general.config')
     sensor_db = Database(config.get_setting('databases', 'sensor_data_db_path'))
     dataobj = {
-        'wind_speed_mph': 292500
+        'wind_speed_mph': 585000
     }
     print(sensor_db.remove_single_record(dataobj))
 
