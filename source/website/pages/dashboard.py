@@ -120,6 +120,33 @@ class Dashboard:
         ], justify='center')
         rows.append(graph_div_row)
 
+        rows.append(break_row)
+
+        environment_map_title = dbc.Row([dbc.Col([html.H2('Environment Map')], width='auto')], justify='center')
+        rows.append(environment_map_title)
+
+        map_options = ['Temperature', 'Humidity', 'Pressure', 'CO2', 'TVOC', 'Soil Moisture', 'Wind Speed'  ]
+        map_drop = dbc.Row([
+            dbc.Col([
+                dcc.Dropdown(
+                    map_options,
+                    value=map_options[0],
+                    searchable=False,
+                    clearable=False,
+                    id='dash-map-drop'
+                )
+            ], width='4')
+        ], justify='center')
+        rows.append(map_drop)
+
+        map_div_row = dbc.Row([
+            dbc.Col([
+                html.Div(id='dash-map-view')
+            ], width='10', xl='10')
+        ], justify='center')
+        rows.append(map_div_row)
+
+        rows.append(break_row)
         return rows
 
     def get_layout(self):
