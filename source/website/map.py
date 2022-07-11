@@ -351,10 +351,10 @@ class Map:
         mags = [x['mag'] for x in data]
         max_mag = max(mags)
         min_mag = min(mags)
-        for record in data:
-            print(record)
+        # for record in data:
+        #     print(record)
         df = pd.DataFrame(data)
-        print(df)
+        # print(df)
         fig = px.density_mapbox(df, lat='lat', lon='lon', z='mag', radius=100, center=dict(lat=root_lat, lon=root_lon),
                                 zoom=12, mapbox_style="stamen-terrain", animation_frame='hour', hover_name='node_id',
                                 range_color=[min_mag, max_mag], labels={'mag': mag_label, 'hour': 'Hour of the Day'},
