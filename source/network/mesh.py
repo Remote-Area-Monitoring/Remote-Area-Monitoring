@@ -140,6 +140,14 @@ class Mesh:
             return data
         if 'wind_speed_raw' in data:
             data['wind_speed_mph'] = self.convert.raw_wind_speed_to_mph(data['wind_speed_raw'])
+        elif 'wind_speed_mph' in data:
+            if data['wind_speed_mph'] > 260:
+                data['wind_speed_mph'] = 0
+        if 'wind_dir_raw' in data:
+            data['wind_direction'] = self.convert.raw_wind_direction_to_degrees(data['wind_direction_raw'])
+        elif 'wind_direction' in data:
+            if data['wind_direction'] > 360:
+                data['wind_direction'] = 0
         data_with_timestamp = {'timestamp': self.ts.get_timestamp()}
         data_with_timestamp.update(data)
         return data_with_timestamp
