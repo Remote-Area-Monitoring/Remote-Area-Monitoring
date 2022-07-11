@@ -36,6 +36,8 @@ class Convert:
         for value in values:
             if value > 0:
                 value = cal_factor / value
+            if value > 260:
+                value = 0
             calculated_values.append(value)
         return mean(calculated_values)
 
