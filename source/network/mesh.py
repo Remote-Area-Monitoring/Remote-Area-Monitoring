@@ -138,12 +138,14 @@ class Mesh:
             data = self.receive_json()
         if data is None:
             return data
+        elif 'bus_voltage_V' not in data:
+            return None
         if 'wind_speed_raw' in data:
             data['wind_speed_mph'] = self.convert.raw_wind_speed_to_mph(data['wind_speed_raw'])
         elif 'wind_speed_mph' in data:
             if data['wind_speed_mph'] > 260:
                 data['wind_speed_mph'] = 0
-        if 'wind_dir_raw' in data:
+        if 'wind_direction_raw' in data:
             data['wind_direction'] = self.convert.raw_wind_direction_to_degrees(data['wind_direction_raw'])
         elif 'wind_direction' in data:
             if data['wind_direction'] > 360:
@@ -166,10 +168,12 @@ class Mesh:
         records = list()
         nodes = self.nodes_db.get_all()
         for node in nodes:
-            connected_nodes = self.nodes_config.get_list_setting('connected_nodes', 'node_ids')
+            connected_nodes = self.list_connected_nodes()
             if connected_nodes is None or len(connected_nodes) < 1:
+                print('No nodes connected')
                 continue
             if node['node_id'] not in connected_nodes:
+                print('Node {} Not Connected'.format(node['node_id']))
                 continue
             if node['status'] == 'active' and node['node_config']['sensors'] is True:
                 data = self.get_sensor_data(node['node_id'])
