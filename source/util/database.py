@@ -46,10 +46,14 @@ class Database:
 def main():
     config = Settings('general.config')
     sensor_db = Database(config.get_setting('databases', 'sensor_data_db_path'))
-    dataobj = {
-        'wind_speed_mph': 585000
-    }
-    print(sensor_db.remove_single_record(dataobj))
+    # dataobj = {
+    #     'timestamp': 1657462529.122013
+    # }
+    # print(sensor_db.remove_single_record(dataobj))
+    data = sensor_db.get_all()
+    for record in data:
+        if 'wind_direction' not in record:
+            print(record)
 
 
 if __name__ == '__main__':
