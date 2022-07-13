@@ -135,7 +135,7 @@ class Graph:
                 try:
                     x_data.append(record['timestamp'])
                     y_data.append(self.convert.humidity(record['humidity']))
-                except IndexError:
+                except KeyError:
                     continue
         elif data_type == 'pressure':
             title = '(' + str(node_id) + ') Atmospheric Pressure Over Time'
@@ -144,7 +144,7 @@ class Graph:
                 try:
                     x_data.append(record['timestamp'])
                     y_data.append(self.convert.pressure_mbar(record['air_pressure_Pa']))
-                except IndexError:
+                except KeyError:
                     continue
         elif data_type == 'co2':
             title = '(' + str(node_id) + ') Carbon Dioxide (CO2) Over Time'
@@ -153,7 +153,7 @@ class Graph:
                 try:
                     x_data.append(record['timestamp'])
                     y_data.append(record['co2_ppm'])
-                except IndexError:
+                except KeyError:
                     continue
         elif data_type == 'tvoc':
             title = '(' + str(node_id) + ') Total Volatile Organic Carbons (TVOC) Over Time'
@@ -162,7 +162,7 @@ class Graph:
                 try:
                     x_data.append(record['timestamp'])
                     y_data.append(record['tvoc_ppb'])
-                except IndexError:
+                except KeyError:
                     continue
         elif data_type == 'tvoc':
             title = '(' + str(node_id) + ') Total Volatile Organic Carbons (TVOC) Over Time'
@@ -171,7 +171,7 @@ class Graph:
                 try:
                     x_data.append(record['timestamp'])
                     y_data.append(record['tvoc_ppb'])
-                except IndexError:
+                except KeyError:
                     continue
         elif 'soil' in data_type:
             title = '(' + str(node_id) + ') Soil Moisture Content Over Time'
@@ -180,7 +180,7 @@ class Graph:
                 try:
                     x_data.append(record['timestamp'])
                     y_data.append(record['soil_moisture_adc'])
-                except IndexError:
+                except KeyError:
                     continue
         elif 'speed' in data_type:
             title = '(' + str(node_id) + ') Wind Speed Over Time'
@@ -192,7 +192,7 @@ class Graph:
                 try:
                     x_data.append(record['timestamp'])
                     y_data.append(self.convert.wind_speed(record['wind_speed_mph']))
-                except IndexError:
+                except KeyError:
                     continue
         elif 'direction' in data_type:
             title = '(' + str(node_id) + ') Wind Direction Over Time'
@@ -201,7 +201,7 @@ class Graph:
                 try:
                     x_data.append(record['timestamp'])
                     y_data.append(record['wind_direction'])
-                except IndexError:
+                except KeyError:
                     continue
         elif 'current' in data_type:
             title = '(' + str(node_id) + ') Battery Current Over Time'
@@ -210,7 +210,7 @@ class Graph:
                 try:
                     x_data.append(record['timestamp'])
                     y_data.append(record['current_mA'])
-                except IndexError:
+                except KeyError:
                     continue
         elif 'volt' in data_type:
             title = '(' + str(node_id) + ') Battery Voltage Over Time'
@@ -219,7 +219,7 @@ class Graph:
                 try:
                     x_data.append(record['timestamp'])
                     y_data.append(record['bus_voltage_V'])
-                except IndexError:
+                except KeyError:
                     continue
         elif 'power' in data_type:
             title = '(' + str(node_id) + ') Bus Power Over Time'
@@ -228,7 +228,7 @@ class Graph:
                 try:
                     x_data.append(record['timestamp'])
                     y_data.append(self.convert.power(record['power_mW']))
-                except IndexError:
+                except KeyError:
                     continue
         elif 'connection' in data_type:
             title = '(' + str(node_id) + ') Mesh Connection Strength Over Time'
