@@ -127,3 +127,16 @@ class Timestamps:
 
     def get_1week_timestamp(self):
         return datetime.now().timestamp() - ((24 * 3600) * 7)
+
+    def get_imperial_date_string(self, timestamp=None):
+        if timestamp is None:
+            timestamp = self.get_timestamp()
+        return datetime.fromtimestamp(timestamp).strftime('%m/%d/%Y')
+
+    def get_metric_date_string(self, timestamp=None):
+        if timestamp is None:
+            timestamp = self.get_timestamp()
+        return datetime.fromtimestamp(timestamp).strftime('%Y/%m/%d')
+
+    def get_day_timestring(self, timestamp):
+        return datetime.fromtimestamp(timestamp).strftime('%A, %Y-%m-%d %H:%M:%S')
