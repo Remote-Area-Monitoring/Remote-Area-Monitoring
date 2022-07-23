@@ -13,16 +13,22 @@ class Analysis:
         results = list()
         keys = self.sensor_data[-1].keys()
         for key in keys:
+            if key not in self.sensor_data[-1]:
+                continue
             if isinstance(self.sensor_data[-1][key], numbers.Number) is False:
                 continue
             try:
-                seq = [x[key] for x in self.sensor_data]
+                # seq = [x[key] for x in self.sensor_data]
+                seq = list()
+                for record in self.sensor_data:
+                    if key in record:
+                        seq.append(record[key])
                 maximum = round(max(seq), 2)
                 minimum = round(min(seq), 2)
                 current = round(self.sensor_data[-1][key], 2)
                 results.append({'name': key, 'current_value': current, 'max_value': maximum, 'min_value': minimum})
             except Exception as e:
-                print(e)
+                print('Error -> analysis.py: ', e)
         return results
 
     def get_last_update_string(self):
