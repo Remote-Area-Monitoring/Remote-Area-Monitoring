@@ -12,8 +12,10 @@ from source.util.image import Image
 from source.website.graph import Graph
 from source.util.timekeeper import Timestamps
 from source.website.gauges import Gauges
+from source.website.users import User
+from source.notifications.notify import Notify
 from source.website.pages import home, map_example, node_table, updater, example_maps, image_example, node_details, \
-    node_list, dashboard, mesh_manager
+    node_list, dashboard, mesh_manager, notifications
 
 config = Settings('general.config')
 nodes_config = Settings('nodes.config')
@@ -53,6 +55,7 @@ nav_items = dbc.Row([
     dbc.Col([dbc.NavItem(dbc.NavLink("Dashboard", href="/dashboard"))], width='auto'),
     dbc.Col([dbc.NavItem(dbc.NavLink("Node List", href="/node-list"))], width='auto'),
     dbc.Col([dbc.NavItem(dbc.NavLink("Network", href="/mesh-manager"))], width='auto'),
+    dbc.Col([dbc.NavItem(dbc.NavLink("Notify", href="/notify"))], width='auto'),
     dbc.Col([
         dbc.DropdownMenu(
                 children=[
@@ -206,6 +209,32 @@ def update_mesh_settings_modal_state(open_clicks, close_clicks, close_save_click
     return modal_state
 
 
+@app.callback(Output('notify-email-status-label', 'children'),
+              [
+                  Input('notify-add-email-button', 'n_clicks'),
+                  Input('notify-remove-email-button', 'n_clicks')
+              ],
+              State('notify-email-input', 'value'))
+def add_or_remove_notify_email(add_clicks, remove_clicks, email):
+    changed_id = [p['prop_id'] for p in callback_context.triggered][0]
+    status_label = ''
+    if 'notify-add-email-button' in changed_id:
+        add_success = User().add_user_email(email)
+        if add_success is True:
+            Notify().send_subscribe_notice(email)
+            status_label = 'Email Successfully Registered'
+        else:
+            status_label = 'Email Already Registered'
+    elif 'notify-remove-email-button' in changed_id:
+        remove_success = User().remove_user_email(email)
+        if remove_success is True:
+            Notify().send_unsubscribe_notice(email)
+            status_label = 'Email Successfully Unsubscribed'
+        else:
+            status_label = 'Email Not Found'
+    return html.P(status_label)
+
+
 # Navigate pages
 @app.callback(Output('page-content', 'children'),
               Input('url', 'pathname'))
@@ -228,6 +257,8 @@ def display_page(pathname):
         return dashboard.Dashboard().get_layout()
     elif pathname == '/mesh-manager':
         return mesh_manager.Manager().get_layout()
+    elif pathname == '/notify':
+        return notifications.Notification().get_layout()
     else:
         return dashboard.Dashboard().get_layout()
 
