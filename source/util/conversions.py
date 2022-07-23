@@ -29,7 +29,10 @@ class Convert:
         return round(value, 2)
 
     def raw_wind_speed_to_mph(self, values: str):
-        values = values.split('?')
+        try:
+            values = values.split('?')
+        except AttributeError:
+            return 0
         values = [float(value) for value in values]
         cal_factor = self.config.get_float_setting('units', 'wind_speed_cal_factor')
         calculated_values = list()
@@ -42,7 +45,10 @@ class Convert:
         return mean(calculated_values)
 
     def raw_wind_direction_to_degrees(self, values: str):
-        values = values.split('?')
+        try:
+            values = values.split('?')
+        except AttributeError:
+            return 0
         values = [float(value) for value in values]
         cal_factor = self.config.get_float_setting('units', 'wind_dir_cal_factor')
         min_counts = self.config.get_float_setting('units', 'wind_dir_min_counts')
