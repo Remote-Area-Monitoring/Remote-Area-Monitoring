@@ -150,6 +150,9 @@ class Mesh:
         elif 'wind_direction' in data:
             if data['wind_direction'] > 360:
                 data['wind_direction'] = 0
+        if 'co2_ppm' in data:
+            if data['co2_ppm'] < 400:
+                data['co2_ppm'] = 400
         data_with_timestamp = {'timestamp': self.ts.get_timestamp()}
         data_with_timestamp.update(data)
         return data_with_timestamp
@@ -296,7 +299,12 @@ class Mesh:
                         continue
 
     def update_connected_nodes(self):
-        self.nodes_config.set_setting('connected_nodes', 'node_ids', str(self.list_connected_nodes()))
+        connected_nodes = self.list_connected_nodes()
+        if connected_nodes is None:
+            connected_nodes = '[]'
+        else:
+            connected_nodes = str(connected_nodes)
+        self.nodes_config.set_setting('connected_nodes', 'node_ids', connected_nodes)
         self.nodes_config.set_setting('connected_nodes', 'last_updated', str(self.ts.get_timestamp()))
         self.nodes_config.set_setting('connected_nodes', 'topology', json.dumps(self.get_topology()))
         signal_strength = self.get_connection_strength()
