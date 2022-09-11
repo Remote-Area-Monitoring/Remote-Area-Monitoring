@@ -134,7 +134,7 @@ class Notify:
             return None
         daily_update_sent = False
         daily_summary_hour = self.general_config.get_int_setting('notify', 'daily_summary_hour')
-        if self.ts.hour_from_timestamp(self.ts.get_timestamp()) != daily_summary_hour and force is False:
+        if self.ts.hour_from_timestamp(self.ts.get_timestamp()) < daily_summary_hour and force is False:
             return None
         previous_notifications = self.alerts_db.get_records(self.ts.get_24h_timestamp())
         if previous_notifications is None:

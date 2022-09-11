@@ -97,7 +97,7 @@ class Notification:
         rows.append(break_row)
 
         notifications = self.notify_db.get_records(self.ts.get_24h_timestamp())
-        if len(notifications) < 1:
+        if notifications is None or len(notifications) < 1:
             headers = ['Notifications']
             values = [['No Notifications Sent']]
         else:

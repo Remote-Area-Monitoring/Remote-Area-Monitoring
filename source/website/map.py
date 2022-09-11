@@ -211,10 +211,13 @@ class Map:
 
     def get_node_status_map(self):
         data = self.__get_node_status_map_dataframe()
+        color_seq = ['red', 'green']
+        if 'Connected' in data['connection_status'].values.tolist():
+            color_seq = ['green', 'red']
         if data is None:
             return html.P('Network Status Map Unavailable')
         fig = px.scatter_mapbox(data, lat="lat", lon="lon", color='connection_status',
-                                color_discrete_sequence=['green', 'red'], zoom=13, hover_name='node_id',
+                                color_discrete_sequence=color_seq, zoom=13, hover_name='node_id',
                                 size='size', hover_data=['lat', 'lon', 'connection_status', 'signal_strength(dB)',
                                                          'polling_status', 'notes'])
         fig.update_layout(mapbox_style="stamen-terrain")

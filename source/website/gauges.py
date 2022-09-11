@@ -177,7 +177,7 @@ class Gauges:
             dbc.Col([
                 html.Div([
                     daq.Gauge(
-                        scale={'start': 0, 'interval': 100, 'labelInterval': 2},
+                        # scale={'start': 0, 'interval': 100, 'labelInterval': 2},
                         showCurrentValue=True,
                         color='#0d6dfd',
                         label='CO2',

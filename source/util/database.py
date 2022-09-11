@@ -50,10 +50,15 @@ def main():
     #     'timestamp': 1657462529.122013
     # }
     # print(sensor_db.remove_single_record(dataobj))
+    # data = sensor_db.get_all()
+    # for record in data:
+    #     if 'wind_direction' not in record:
+    #         print(record)
     data = sensor_db.get_all()
     for record in data:
-        if 'wind_direction' not in record:
-            print(record)
+        if 'air_temperature_C' in record:
+            if record['air_temperature_C'] > 100:
+                sensor_db.remove_single_record(record)
 
 
 if __name__ == '__main__':
